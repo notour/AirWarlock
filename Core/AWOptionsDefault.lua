@@ -1,4 +1,4 @@
--- @type AWMinimap
+-- @type AWOptionDefaults
 local AWOptionDefaults = AWModuleLoader:CreateModule("AWOptionDefaults");
 
 --[[

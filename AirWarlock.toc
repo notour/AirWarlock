@@ -10,6 +10,12 @@ embeds.xml
 
 # Core
 Core\AWModuleLoader.lua
+Core\WowApi-1.0.lua
+Core\AWSerializer.lua
+Core\AWOptionsDefault.lua
+
+# Profiles
+Profiles\Warlock.lua
 
 # Entry Point
 AirWarlock.lua
