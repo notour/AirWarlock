@@ -1,0 +1,15 @@
+## Interface : 11302
+## Title : Air Warlock
+## Author : Mickael Thumerel
+## Version : 1.0
+
+### SavedVariablesPerCharacter: PC_MinimapPos
+
+#Libs
+embeds.xml
+
+# Core
+Core\AWModuleLoader.lua
+
+# Entry Point
+AirWarlock.lua
