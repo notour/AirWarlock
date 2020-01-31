@@ -11,13 +11,14 @@ DEBUG_DEVELOP = "|cff7c83ff[DEVELOP]|r"
 DEBUG_SPAM = "|cffff8484[SPAM]|r"
 
 local InDebugMode = true
-local ClassType = "Warlock";
+local ClassTypeLower = "warlock";
 
 local Events = {
-    UpdateWarlockList =  {
+    UpdateMemberList =  {
         -- Update warlock lists
-        "PARTY_MEMBERS_CHANGED",
-        "PARTY_CONVERTED_TO_RAID",
+        --"PARTY_MEMBERS_CHANGED",
+        "GROUP_ROSTER_UPDATE",
+        --"PARTY_CONVERTED_TO_RAID",
         "PARTY_MEMBER_DISABLE",
         "PARTY_MEMBER_ENABLE",
         "RAID_ROSTER_UPDATE"
@@ -40,6 +41,9 @@ local AWProfile = AWModuleLoader:ImportModule("AWProfile");
 -- @load AWSerializer
 local AWSerializer = AWModuleLoader:ImportModule("AWSerializer");
 
+-- @load AWWarlockView
+local AWWarlockView = AWModuleLoader:ImportModule("AWWarlockView");
+
 AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
 _AW = {...}
 
@@ -49,12 +53,14 @@ function AW:OnInitialize()
 
     local frame = CreateFrame("Frame")
 
-    local registerScript = { }
+    self._registerScript = {}
+
+    AWWarlockView:Initialize(AW);
 
     for key,mapEvent in pairs(Events) do
         for indx,eventName in pairs(mapEvent) do
             frame:RegisterEvent(eventName)
-            registerScript.insert(eventName, key);
+            self._registerScript[eventName] = key;
 
             self:Debug(DEBUG_DEVELOP, "frame:RegisterEvent(" .. eventName .. ") by key " .. key .. "");
         end
@@ -62,8 +68,8 @@ function AW:OnInitialize()
 
     frame:SetScript("OnEvent", function(this, event, ...)
 
-        local _, mthod = registerScript[event]
-        self:Debug(DEBUG_DEVELOP, "Call AW[" .. mthod .. "](AW, ...)");
+        local mthod = self._registerScript[event]
+        self:Debug(DEBUG_DEVELOP, "Call AW[" .. mthod .. "](AW, ...) From Event " .. event);
         AW[mthod](AW, ...)
         self:Debug(DEBUG_DEVELOP, "Called");
 
@@ -71,59 +77,68 @@ function AW:OnInitialize()
 
     AW.PlayerName = UnitName("Player");
 
-    self:Debug(DEBUG_INFO, "-- AirWarlock addon loaded")
+    self:Debug(DEBUG_DEVELOP, "-- AirWarlock addon loaded")
 end
 
-function AW:UpdateWarlockList(...)
+function AW:UpdateMemberList(...)
 
+    --AW.Debug(DEBUG_DEVELOP, "UpdateWarlockList AW.IsEnabled : " .. tostring(AW.IsEnabled) .. " " .. AW.PlayerName);
+    
     if (AW.IsEnabled == false) then
         return
     end
 
-    local members = {}
+    local warlocks = {}
     local nbMembers = 0
     local unitPrefix = ""
 
-    self:print("UpdateWarlockList");
-
     if (UnitInParty("Player")) then
-        nbMembers = GetNumPartyMembers()
-        unitPrefix = "party"
+        nbMembers = GetNumGroupMembers()
+        unitPrefix = "Party"
     elseif (UnitInRaid("Player")) then
         nbMembers = GetNumRaidMembers()
-        unitPrefix = "raid"
+        unitPrefix = "Raid"
     else
         return;
     end
 
-    for indx = 0, nbMembers do
+    --AW.Debug(DEBUG_DEVELOP, "UpdateWarlockList unitPrefix: '" .. unitPrefix .. "' nbMembers: '" .. nbMembers .. "'");
+
+    local allMembers = {}
+
+    for indx = 0, nbMembers - 1 do
         local memberId = unitPrefix .. indx
+        --AW.Debug(DEBUG_DEVELOP, " - members :" .. memberId .. " - ");
         local _, englishClass = UnitClass(memberId)
-        self:Debug(DEBUG_DEVELOP, " - members :" .. englishClass .. " - ");
-        if (englishClass == ClassType) then
+        if (englishClass) then
+            --AW.Debug(DEBUG_DEVELOP, " - members class :" .. englishClass .. " - " .. tostring(UnitIsConnected(memberId)));
             local unitName = UnitName(memberId)
-            if (unitName ~= AW.PlayerName) then
-                members.insert(unitName)
-                self:Debug(DEBUG_DEVELOP, " - " .. unitName .. " " .. englishClass .. " - ");
+            allMembers[unitName] = { MemberId = memberId, Class = englishClass:lower(), IsConnected = UnitIsConnected(memberId) }
+            if (englishClass:lower() == ClassTypeLower) then
+                
+                if (unitName ~= AW.PlayerName) then
+                    warlocks[unitName] = {}
+                    --AW.Debug(DEBUG_DEVELOP, " - " .. unitName .. " " .. englishClass .. " - ");
+                end
             end
         end
     end
 
-    AW.Members = members;
+    AW.Warlocks = warlocks;
+    AW.AllMembers = allMembers;
 end
 
 --[[
 Update the current TP list
 ]]
-function AW:UpdateTPList(self, event, msg)
+function AW:UpdateTPList(msg, event)
     if (AW.IsEnabled == false) then
         return
     end
 
-    msg = strtrim(msg).replace(' ', '').lower()
-
-    if (msg == "+1tp") then
-        self:Debug(DEBUG_DEVELOP, msg)
+    local cleanmsg = string.gsub(msg, "%s+", ""):lower()
+    if (cleanmsg == "+1tp") then
+        self:Debug(DEBUG_DEVELOP, "Need tp")
     end
 end
 
@@ -140,9 +155,27 @@ function AW:SlashCommands(args)
 
             local userData = AWProfile:GetCurrent()
             --    local userDataStr =  AWSerializer:Serialize(userData)
-            local userDataStr = LibStub("AceSerializer-3.0"):Serialize(userData)
+            local serializer = LibStub("AceSerializer-3.0");
+            local userDataStr = serializer:Serialize(userData)
 
             self:Debug(DEBUG_DEVELOP, userDataStr)
+            self:Debug(DEBUG_DEVELOP, serializer:Serialize(AW.Warlocks))
+            self:Debug(DEBUG_DEVELOP, serializer:Serialize(AW.AllMembers))
+        end
+
+        if (args ~= nil and arg1:lower() == "update") then
+            AW.UpdateMemberList();
+        end
+
+        if (args ~= nil and arg1:lower() == "show") then
+            self:Debug(DEBUG_DEVELOP, "AWWarlockView:Show")
+            AW.UpdateMemberList();
+            AWWarlockView:Show();
+        end
+
+        if (args ~= nil and arg1:lower() == "hide") then
+            self:Debug(DEBUG_DEVELOP, "AWWarlockView:Hide")
+            AWWarlockView:Hide();
         end
     end
 end
@@ -175,10 +208,17 @@ function AW:OnUpdate(self, elapsed)
     --end
 end
 
+--[[
+Called when the addon is enabled.
+]]
 function AW:OnEnable()
-    -- Called when the addon is enabled
     local _, englishClass = UnitClass("Player")
-    AW.IsEnabled = englishClass == "Warlock";
+    AW.IsEnabled = englishClass:lower() == "warlock";
+    self:Debug(DEBUG_DEVELOP, "OnEnable englishClass: '" .. englishClass .. "'".. tostring(AW.IsEnabled) .. "'");
+
+    if (UnitInParty("Player") or UnitInRaid("Player")) then
+        AW.UpdateMemberList();
+    end
 end
 
 function AW:OnDisable()
@@ -187,27 +227,7 @@ function AW:OnDisable()
 end
 
 function AW:Debug(...)
-    -- if(AW.db.global.debugEnabled) then
-    --     -- Exponents are defined by `debugLevel.values` in QuestieOptionsAdvanced.lua
-    --     -- DEBUG_CRITICAL = 0
-    --     -- DEBUG_ELEVATED = 1
-    --     -- DEBUG_INFO = 2
-    --     -- DEBUG_DEVELOP = 3
-    --     -- DEBUG_SPAM = 4
-    --     if(bit.band(AW.db.global.debugLevel, math.pow(2, 4)) == 0 and select(1, ...) == DEBUG_SPAM)then return; end
-    --     if(bit.band(AW.db.global.debugLevel, math.pow(2, 3)) == 0 and select(1, ...) == DEBUG_DEVELOP)then return; end
-    --     if(bit.band(AW.db.global.debugLevel, math.pow(2, 2)) == 0 and select(1, ...) == DEBUG_INFO)then return; end
-    --     if(bit.band(AW.db.global.debugLevel, math.pow(2, 1)) == 0 and select(1, ...) == DEBUG_ELEVATED)then return; end
-    --     if(bit.band(AW.db.global.debugLevel, math.pow(2, 0)) == 0 and select(1, ...) == DEBUG_CRITICAL)then return; end
-    --     --Questie:Print(...)
-    --     if(QuestieConfigCharacter.log) then
-    --         QuestieConfigCharacter = {};
-    --     end
-
-    --     if AW.db.global.debugEnabledPrint then
-                print(...)
-    --     end
-    -- end
+    print(...)
 end
 
 function AW:debug(...)
