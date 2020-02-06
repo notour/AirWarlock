@@ -91,6 +91,8 @@ function AW:UpdateMemberList(...)
     local warlocks = {}
     local nbMembers = 0
     local unitPrefix = ""
+    local playerName = UnitName("Player");
+    warlocks[playerName] = { UnitName = playerName, Order = 0 };
 
     if (UnitInParty("Player")) then
         nbMembers = GetNumGroupMembers()
@@ -105,7 +107,7 @@ function AW:UpdateMemberList(...)
     --AW.Debug(DEBUG_DEVELOP, "UpdateWarlockList unitPrefix: '" .. unitPrefix .. "' nbMembers: '" .. nbMembers .. "'");
 
     local allMembers = {}
-
+    
     for indx = 0, nbMembers - 1 do
         local memberId = unitPrefix .. indx
         --AW.Debug(DEBUG_DEVELOP, " - members :" .. memberId .. " - ");
@@ -117,8 +119,7 @@ function AW:UpdateMemberList(...)
             if (englishClass:lower() == ClassTypeLower) then
                 
                 if (unitName ~= AW.PlayerName) then
-                    warlocks[unitName] = {}
-                    --AW.Debug(DEBUG_DEVELOP, " - " .. unitName .. " " .. englishClass .. " - ");
+                    warlocks[unitName] = { UnitName = unitName, Order = indx }
                 end
             end
         end
@@ -126,6 +127,11 @@ function AW:UpdateMemberList(...)
 
     AW.Warlocks = warlocks;
     AW.AllMembers = allMembers;
+
+    AWWarlockView:UpdateAll(warlocks);
+end
+
+function AW:UpdateWarlockData()
 end
 
 --[[
@@ -168,13 +174,11 @@ function AW:SlashCommands(args)
         end
 
         if (args ~= nil and arg1:lower() == "show") then
-            self:Debug(DEBUG_DEVELOP, "AWWarlockView:Show")
             AW.UpdateMemberList();
             AWWarlockView:Show();
         end
 
         if (args ~= nil and arg1:lower() == "hide") then
-            self:Debug(DEBUG_DEVELOP, "AWWarlockView:Hide")
             AWWarlockView:Hide();
         end
     end

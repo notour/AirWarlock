@@ -1,0 +1,16 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+
+    <Frame name="AWWarlockFrame" virtual="true">
+        <Layers>
+			<Layer level="OVERLAY">
+				<FontString parentKey="TitleText" inherits="GameFontNormal" text="test">
+					<Anchors>
+						<Anchor point="TOP" x="-6" y="-4" />
+					</Anchors>
+				</FontString>
+			</Layer>
+        </Layers>
+    </Frame>
+
+	<Script file="AWWarlockView.lua"/>
+</Ui>

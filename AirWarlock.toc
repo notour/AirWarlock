@@ -3,7 +3,9 @@
 ## Author : Mickael Thumerel
 ## Version : 1.0
 
-### SavedVariablesPerCharacter: PC_MinimapPos
+## DefaultState: enabled
+## SavedVariablesPerCharacter: AW_WarlocK
+
 
 #Libs
 embeds.xml
@@ -13,7 +15,9 @@ Core\AWModuleLoader.lua
 Core\WowApi-1.0.lua
 Core\AWSerializer.lua
 Core\AWOptionsDefault.lua
-Core\AWWarlockView.lua
+
+Views\AWWarlockView.xml
+# Views\AWWarlockView.lua
 
 # Profiles
 Profiles\Warlock.lua
