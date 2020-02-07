@@ -14,19 +14,39 @@ local InDebugMode = true
 local ClassTypeLower = "warlock";
 
 local Events = {
-    UpdateMemberList =  {
+    UpdateMembersInfo =  {
         -- Update warlock lists
         --"PARTY_MEMBERS_CHANGED",
         "GROUP_ROSTER_UPDATE",
         --"PARTY_CONVERTED_TO_RAID",
         "PARTY_MEMBER_DISABLE",
         "PARTY_MEMBER_ENABLE",
-        "RAID_ROSTER_UPDATE"
+        "RAID_ROSTER_UPDATE",
+        "UNIT_CONNECTION",
+
     },
+
     UpdateTPList = {
         -- Check for +1 TP to add in the TP list
         "CHAT_MSG_RAID",
         "CHAT_MSG_PARTY"
+    },
+
+    UpdateWarlockData = {
+        "CHAT_MSG_ADDON"
+    },
+
+    PlayerApplySpell = {
+        "UNIT_SPELLCAST_CHANNEL_START",
+        "UNIT_SPELLCAST_CHANNEL_STOP",
+        "UNIT_SPELLCAST_CHANNEL_UPDATE",
+        "UNIT_SPELLCAST_DELAYED",
+        "UNIT_SPELLCAST_FAILED",
+        "UNIT_SPELLCAST_FAILED_QUIET",
+        "UNIT_SPELLCAST_INTERRUPTED",
+        "UNIT_SPELLCAST_START",
+        "UNIT_SPELLCAST_STOP",
+        "UNIT_SPELLCAST_SUCCEEDED"
     }
 }
 
@@ -44,12 +64,13 @@ local AWSerializer = AWModuleLoader:ImportModule("AWSerializer");
 -- @load AWWarlockView
 local AWWarlockView = AWModuleLoader:ImportModule("AWWarlockView");
 
-AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
+AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
 _AW = {...}
 
 function AW:OnInitialize()
     AW.db = LibStub("AceDB-3.0"):New("AWConfig", AWOptionDefaults:Load(), true)
     self:RegisterChatCommand("AW", "SlashCommands")
+    self:RegisterComm("AWSYNC", "UpdateWarlockData");
 
     local frame = CreateFrame("Frame")
 
@@ -61,29 +82,26 @@ function AW:OnInitialize()
         for indx,eventName in pairs(mapEvent) do
             frame:RegisterEvent(eventName)
             self._registerScript[eventName] = key;
-
-            self:Debug(DEBUG_DEVELOP, "frame:RegisterEvent(" .. eventName .. ") by key " .. key .. "");
+            --self:Debug(DEBUG_DEVELOP, "frame:RegisterEvent(" .. eventName .. ") by key " .. key .. "");
         end
     end
 
     frame:SetScript("OnEvent", function(this, event, ...)
 
         local mthod = self._registerScript[event]
-        self:Debug(DEBUG_DEVELOP, "Call AW[" .. mthod .. "](AW, ...) From Event " .. event);
+        --self:Debug(DEBUG_DEVELOP, "Call AW[" .. mthod .. "](AW, ...) From Event " .. event .. " IsEnabled " .. tostring(AW.IsEnabled));
         AW[mthod](AW, ...)
-        self:Debug(DEBUG_DEVELOP, "Called");
+        --self:Debug(DEBUG_DEVELOP, "Called");
 
     end)
 
     AW.PlayerName = UnitName("Player");
 
-    self:Debug(DEBUG_DEVELOP, "-- AirWarlock addon loaded")
+    --self:Debug(DEBUG_DEVELOP, "-- AirWarlock addon loaded")
 end
 
-function AW:UpdateMemberList(...)
+function AW:UpdateMembersInfo(...)
 
-    --AW.Debug(DEBUG_DEVELOP, "UpdateWarlockList AW.IsEnabled : " .. tostring(AW.IsEnabled) .. " " .. AW.PlayerName);
-    
     if (AW.IsEnabled == false) then
         return
     end
@@ -91,8 +109,9 @@ function AW:UpdateMemberList(...)
     local warlocks = {}
     local nbMembers = 0
     local unitPrefix = ""
+    local allMembers = {}
     local playerName = UnitName("Player");
-    warlocks[playerName] = { UnitName = playerName, Order = 0 };
+    warlocks[playerName] = { Unit = "Player", UnitName = playerName, Order = 0, Profile = AWProfile:GetCurrent() };
 
     if (UnitInParty("Player")) then
         nbMembers = GetNumGroupMembers()
@@ -100,26 +119,24 @@ function AW:UpdateMemberList(...)
     elseif (UnitInRaid("Player")) then
         nbMembers = GetNumRaidMembers()
         unitPrefix = "Raid"
-    else
-        return;
     end
 
-    --AW.Debug(DEBUG_DEVELOP, "UpdateWarlockList unitPrefix: '" .. unitPrefix .. "' nbMembers: '" .. nbMembers .. "'");
+    if (unitPrefix ~= "") then
+        for indx = 0, nbMembers - 1 do
+            local memberId = unitPrefix .. indx
+            local _, englishClass = UnitClass(memberId)
+            if (englishClass) then
+                local unitName = UnitName(memberId)
+                allMembers[unitName] = { MemberId = memberId, Class = englishClass:lower(), IsConnected = UnitIsConnected(memberId) }
+                if (englishClass:lower() == ClassTypeLower) then
+                    
+                    if (unitName ~= AW.PlayerName and warlocks[unitName] == nil) then
+                        warlocks[unitName] = { UnitName = unitName, Order = indx, Profile = AWProfile:Default() }
+                    end
 
-    local allMembers = {}
-    
-    for indx = 0, nbMembers - 1 do
-        local memberId = unitPrefix .. indx
-        --AW.Debug(DEBUG_DEVELOP, " - members :" .. memberId .. " - ");
-        local _, englishClass = UnitClass(memberId)
-        if (englishClass) then
-            --AW.Debug(DEBUG_DEVELOP, " - members class :" .. englishClass .. " - " .. tostring(UnitIsConnected(memberId)));
-            local unitName = UnitName(memberId)
-            allMembers[unitName] = { MemberId = memberId, Class = englishClass:lower(), IsConnected = UnitIsConnected(memberId) }
-            if (englishClass:lower() == ClassTypeLower) then
-                
-                if (unitName ~= AW.PlayerName) then
-                    warlocks[unitName] = { UnitName = unitName, Order = indx }
+                    if (warlocks[unitName] ~= nil) then
+                        warlocks[unitName].Unit = memberId;
+                    end
                 end
             end
         end
@@ -128,10 +145,53 @@ function AW:UpdateMemberList(...)
     AW.Warlocks = warlocks;
     AW.AllMembers = allMembers;
 
+    for key, info in pairs(warlocks) do
+        info.Profile.IsOnline = UnitIsConnected(info.Unit);
+    end
+
     AWWarlockView:UpdateAll(warlocks);
 end
 
-function AW:UpdateWarlockData()
+--[[
+    Update to local user information to the user members
+]]
+function AW:SendProfileUpdate()
+    local playerName = UnitName("PLAYER");
+    if (AW.Warlocks[playerName] ~= nil) then
+        local userData = AWProfile:GetCurrent()
+        local userDataStr = AWSerializer:Serialize(userData)
+        
+        AW.Warlocks[playerName].Profile = userData;
+
+        local target = "";
+        if (UnitInRaid("Player")) then
+            target = "RAID";
+        elseif (UnitInParty("Player")) then
+            target = "PARTY"
+        end
+
+        AW:SendCommMessage("AWSYNC", userDataStr, target);
+    end
+end
+
+--[[
+    Called when the user information are sync
+]]
+function AW:UpdateWarlockData(prefix, message, msgType, sender)
+    
+    local unitName, server = UnitFullName("Player");
+    if (prefix ~= "AWSYNC" or sender == unitName or sender == unitName .. "-" .. server) then
+        return;
+    end
+    local profile = AWSerializer:Deserialize(message);
+
+    AW:UpdateMembersInfo();
+
+    if (profile.Name ~= nil and AW.Warlocks[profile.Name] ~= nil) then
+        AW.Warlocks[profile.Name].Profile = profile;
+    end
+
+    AWWarlockView:UpdateAll(AW.Warlocks);
 end
 
 --[[
@@ -170,11 +230,11 @@ function AW:SlashCommands(args)
         end
 
         if (args ~= nil and arg1:lower() == "update") then
-            AW.UpdateMemberList();
+            AW.UpdateMembersInfo();
         end
 
         if (args ~= nil and arg1:lower() == "show") then
-            AW.UpdateMemberList();
+            AW.UpdateMembersInfo();
             AWWarlockView:Show();
         end
 
@@ -213,6 +273,29 @@ function AW:OnUpdate(self, elapsed)
 end
 
 --[[
+    Called each time a spell action if done
+]]
+function AW:PlayerApplySpell(unitTarget, castGUID, spellID)
+    if (spellID ~= nil and AWProfile:DoesNeedUpdateInfo(spellID)) then
+        local targetName = UnitName("TARGET");
+
+        if (targetName == nil) then
+            targetName = "";
+        end
+
+        local targetGUID = UnitGUID("TARGET");
+        if (targetGUID ~= nil) then
+            targetName = targetName .. " " .. targetGUID;
+        end
+
+        AW:Debug(DEBUG_DEVELOP, " PlayerCastSpell on (".. targetName .. ") spellId " .. spellID);
+        AW:SendProfileUpdate();
+
+        AW:UpdateMembersInfo();
+    end
+end
+
+--[[
 Called when the addon is enabled.
 ]]
 function AW:OnEnable()
@@ -221,7 +304,7 @@ function AW:OnEnable()
     self:Debug(DEBUG_DEVELOP, "OnEnable englishClass: '" .. englishClass .. "'".. tostring(AW.IsEnabled) .. "'");
 
     if (UnitInParty("Player") or UnitInRaid("Player")) then
-        AW.UpdateMemberList();
+        AW.UpdateMembersInfo();
     end
 end
 

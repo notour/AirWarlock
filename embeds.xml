@@ -4,6 +4,9 @@
 
     <Script file="Libs\LibStub\LibStub.lua"/>
 
+    <include file="Views\NRViewTemplates.xml" />
+    <include file="Views\AWWarlockTemplates.xml" />
+
     <include file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml"/>
     <include file="Libs\AceAddon-3.0\AceAddon-3.0.xml"/>
     <include file="Libs\AceBucket-3.0\AceBucket-3.0.xml"/>

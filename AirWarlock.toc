@@ -6,18 +6,17 @@
 ## DefaultState: enabled
 ## SavedVariablesPerCharacter: AW_WarlocK
 
-
-#Libs
+# Libs & Views
 embeds.xml
 
 # Core
 Core\AWModuleLoader.lua
 Core\WowApi-1.0.lua
+Core\WowUIApi-1.0.lua
 Core\AWSerializer.lua
 Core\AWOptionsDefault.lua
 
-Views\AWWarlockView.xml
-# Views\AWWarlockView.lua
+Views\AWWarlockView.lua
 
 # Profiles
 Profiles\Warlock.lua

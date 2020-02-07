@@ -14,5 +14,9 @@ end
     Deserialize the string to object
 ]]
 function AWSerializer:Deserialize(str)
-    return AceSerializer:Deserialize(str);
+    local sucess, data = AceSerializer:Deserialize(tostring(str));
+    if (sucess) then
+        return data;
+    end
+    return nil;
 end

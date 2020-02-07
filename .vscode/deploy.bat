@@ -11,6 +11,7 @@ if exist "%WowAddonPath%" (
     xcopy "%~dp0..\*" "%WowAddonPath%/AirWarlock/*" /Y /E
     rmdir /S /Q "%WowAddonPath%/AirWarlock/.vscode/"
     rmdir /S /Q "%WowAddonPath%/AirWarlock/.*"
+    del /F "%WowAddonPath%/AirWarlock/.gitignore"
 ) else (
     print "Wow Folder Path missing : %WowAddonPath%"
 )

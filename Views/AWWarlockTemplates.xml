@@ -1,0 +1,65 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+
+    <Frame name="AWWarlockFrame" virtual="true">
+        <Layers>
+			<Layer level="BACKGROUND">
+                <Texture parentKey="Bg" textureSubLevel="-1">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" />
+                        <Anchor point="BOTTOMRIGHT" />
+                    </Anchors>
+					<!-- <Color r="0.1" g="0.1" b="0.1" a="0.8" /> -->
+                </Texture>
+
+				<Texture parentKey="playerInfoRow" textureSubLevel="-1">
+					<Anchors>
+                        <Anchor point="TOPLEFT" />
+                        <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="24" x="0" />
+                    </Anchors>
+					<Color r="0.1" g="0.1" b="0.1" a="0.8" />
+				</Texture>
+
+				<Texture parentKey="playerInfoNameCol">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoRow" relativePoint="TOPLEFT" x="2" y="-2" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="BOTTOMRIGHT" x="-50" y="2" />
+                    </Anchors>
+					<!-- <Color r="0.1" g="1" b="0.1" a="0.7" /> -->
+				</Texture>
+
+				<Texture parentKey="playerInfoShardCol">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoNameCol" relativePoint="TOPRIGHT" x="2" />
+						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="TOPRIGHT" x="-2" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" y="2" />
+                    </Anchors>
+					<!-- <Color r="0.1" g="0.1" b="1" a="0.7" /> -->
+				</Texture>
+
+				<Texture parentKey="shardIco" file="Interface\ICONS\INV_Misc_Gem_Amethyst_02">
+					<Size x="20" y="20" />
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoShardCol" relativePoint="TOPLEFT" x="0" y="0" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.playerInfoShardCol" relativePoint="BOTTOMLEFT" x="0" y="0" />
+                    </Anchors>
+				</Texture>
+
+			</Layer>
+
+			<Layer level="ARTWORK">
+				<FontString parentKey="PlayerName" inherits="GameFontHighlightSmall" >
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.playerInfoNameCol" x="5" y="-4" />
+					</Anchors>
+				</FontString>
+
+				<FontString parentKey="ShardNumber" inherits="GameFontHighlightSmall" >
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoShardCol" relativePoint="TOPRIGHT" x="-1" y="-5" />
+					</Anchors>
+				</FontString>
+			</Layer>
+        </Layers>
+    </Frame>
+
+</Ui>
