@@ -6,6 +6,10 @@
 ]]
 
 local AWWarlockViewModule = AWModuleLoader:CreateModule("AWWarlockView");
+
+local WowFramePool = AWModuleLoader:ImportModule("WowFramePool");
+local AceSerializer = LibStub("AceSerializer-3.0");
+
 local WowUIApiHelper = LibStub("WowUIApi-1.0")
 
 function AWWarlockViewModule:Initialize(AWModule)
@@ -20,8 +24,9 @@ function AWWarlockViewModule:Initialize(AWModule)
         4. Parent XML template to inherit "TEMPLATE, ..."
     ]]
     UIFrame = CreateFrame("Frame", "AWWarlockView", UIParent, "NRUIAddonWindow");
-    AWWarlockViewModule.AW = AWModule
-    AWWarlockViewModule.Frame = UIFrame
+    AWWarlockViewModule.AW = AWModule;
+    AWWarlockViewModule.Frame = UIFrame;
+    AWWarlockViewModule.PlayerFrames = {};
 
     UIFrame:SetSize(350, 400);
     UIFrame:SetPoint("CENTER");
@@ -57,7 +62,9 @@ function AWWarlockViewModule:Initialize(AWModule)
     AWWarlockViewModule.Content = child;
     AWWarlockViewModule.ContentRoot = AWWarlockViewModule.Content;
 
-    WowUIApiHelper:SetFrameResizeable(UIFrame, 150, 200, function ()
+    AWWarlockViewModule.FramePool = WowFramePool:new(AWWarlockViewModule.ContentRoot, "AWWarlockFrame", 40);
+
+    WowUIApiHelper:SetFrameResizeable(UIFrame, 200, 200, function ()
         AWWarlockViewModule:UpdateViewSizes()
     end);
 
@@ -81,49 +88,60 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     end
     table.sort(sortWarlocks, function(a, b) return a.Order < b.Order end);
 
+    local previsouHost = nil;
     for id, data in ipairs(sortWarlocks) do
-        AWWarlockViewModule:UpdateWarlockInfo(data);
+        previsouHost = AWWarlockViewModule:UpdateWarlockInfo(data, previsouHost);
+    end
+
+    for key, data in pairs(AWWarlockViewModule.PlayerFrames) do
+        if (warlocks[key] == nil) then
+            AWWarlockViewModule.PlayerFrames[key] = nil;
+            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
+            AWWarlockViewModule.FramePool:Recycle(data);
+        end
     end
 end
 
 --[[
     Update the view warlock info
 ]]
-function AWWarlockViewModule:UpdateWarlockInfo(data)
+function AWWarlockViewModule:UpdateWarlockInfo(data, parentHostFrame)
     AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "UpdateWarlockInfo : " .. data.Order .. " " .. data.UnitName);
 
-    local hostName ="AWWarlock" .. data.Order;
-    local previousHostName ="AWWarlock" .. (data.Order - 1);
-    local currentHostFrame = AWWarlockViewModule.Frame[hostName];
+    local currentHostFrame = AWWarlockViewModule.PlayerFrames[data.UnitName];
+
+    local parent = AWWarlockViewModule.Content;
+    local firstElem = true;
+    if (parentHostFrame ~= nil) then
+        parent = parentHostFrame;
+        firstElem = false;
+    end
 
     if (currentHostFrame == nil) then
-        local parent = AWWarlockViewModule.Content;
-        local firstElem = true;
-        if (data.Order > 0 and AWWarlockViewModule.Frame[previousHostName] ~= nil) then
-            parent = AWWarlockViewModule.Frame[previousHostName];
-            firstElem = false;
-        end
+        currentHostFrame = AWWarlockViewModule.FramePool:Pop();
 
-        currentHostFrame = CreateFrame("Frame", nil, AWWarlockViewModule.ContentRoot, "AWWarlockFrame");
-        --currentHostFrame:SetAllPoints(true);
-        AWWarlockViewModule.Frame[hostName] = currentHostFrame;
+        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Create new currentHostFrame");
+
+        AWWarlockViewModule.PlayerFrames[data.UnitName] = currentHostFrame;
         currentHostFrame:SetSize(100, 50);
 
         currentHostFrame.bg = currentHostFrame:CreateTexture(nil, "BACKGROUND");
-        --currentHostFrame.bg:SetAllPoints(true);
-        currentHostFrame.bg:SetColorTexture(0.8, 0.8, 0.8, 0.2);
+        currentHostFrame.bg:SetAllPoints(true);
+        currentHostFrame.bg:SetColorTexture(0.5, 0.5, 0.5, 0.2);
 
-        currentHostFrame.Name = hostName;
+        currentHostFrame.Name = data.UnitName;
+    end
 
-        if (firstElem) then
-            currentHostFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -24);
-            currentHostFrame:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, -24);
-        else
-            currentHostFrame:SetPoint("TOPLEFT", parent, "BOTTOMLEFT", 0, 5);
-            currentHostFrame:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", 0, 5);
-            
-            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Set Point relative to ".. parent.Name .. "");
-        end
+    currentHostFrame:ClearAllPoints(true);
+    
+    if (firstElem) then
+        currentHostFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0);
+        currentHostFrame:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, 0);
+    else
+        currentHostFrame:SetPoint("TOPLEFT", parent, "BOTTOMLEFT", 0, -10);
+        currentHostFrame:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", 0, -10);
+        
+        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, parent.Name .. " <- ".. data.UnitName);
     end
 
     if (data.Profile.IsOnline) then
@@ -134,9 +152,8 @@ function AWWarlockViewModule:UpdateWarlockInfo(data)
 
     currentHostFrame.PlayerName:SetText(data.UnitName);
     currentHostFrame.ShardNumber:SetText(data.Profile.NBSoulFragment);
-    
 
-    AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "currentHostFrame.nameLabel:SetText(" .. data.UnitName .. ")");
+    return currentHostFrame;
 end
 
 function AWWarlockViewModule:Hide()

@@ -113,16 +113,16 @@ function AW:UpdateMembersInfo(...)
     local playerName = UnitName("Player");
     warlocks[playerName] = { Unit = "Player", UnitName = playerName, Order = 0, Profile = AWProfile:GetCurrent() };
 
-    if (UnitInParty("Player")) then
-        nbMembers = GetNumGroupMembers()
-        unitPrefix = "Party"
-    elseif (UnitInRaid("Player")) then
-        nbMembers = GetNumRaidMembers()
+    if (UnitInRaid("Player")) then
         unitPrefix = "Raid"
+    elseif (UnitInParty("Player")) then
+        unitPrefix = "Party"
     end
 
+    nbMembers = GetNumGroupMembers()
+
     if (unitPrefix ~= "") then
-        for indx = 0, nbMembers - 1 do
+        for indx = 0, nbMembers do
             local memberId = unitPrefix .. indx
             local _, englishClass = UnitClass(memberId)
             if (englishClass) then

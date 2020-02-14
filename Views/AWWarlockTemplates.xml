@@ -3,39 +3,34 @@
     <Frame name="AWWarlockFrame" virtual="true">
         <Layers>
 			<Layer level="BACKGROUND">
-                <Texture parentKey="Bg" textureSubLevel="-1">
-                    <Anchors>
-                        <Anchor point="TOPLEFT" />
-                        <Anchor point="BOTTOMRIGHT" />
-                    </Anchors>
-					<!-- <Color r="0.1" g="0.1" b="0.1" a="0.8" /> -->
-                </Texture>
+                <Texture parentKey="Bg" textureSubLevel="-1" />
 
 				<Texture parentKey="playerInfoRow" textureSubLevel="-1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" />
-                        <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="24" x="0" />
+                        <Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="0" y="-2" />
+                        <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="-25" x="0" />
                     </Anchors>
-					<Color r="0.1" g="0.1" b="0.1" a="0.8" />
+					<Color r="0" g="0" b="0" a="0.6" />
 				</Texture>
 
-				<Texture parentKey="playerInfoNameCol">
+				<Texture parentKey="playerInfoNameCol" textureSubLevel="1">
 					<Anchors>
                         <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoRow" relativePoint="TOPLEFT" x="2" y="-2" />
                         <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="BOTTOMRIGHT" x="-50" y="2" />
                     </Anchors>
-					<!-- <Color r="0.1" g="1" b="0.1" a="0.7" /> -->
 				</Texture>
 
-				<Texture parentKey="playerInfoShardCol">
+				<Texture parentKey="playerInfoShardCol" textureSubLevel="1">
 					<Anchors>
                         <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoNameCol" relativePoint="TOPRIGHT" x="2" />
 						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="TOPRIGHT" x="-2" />
                         <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" y="2" />
                     </Anchors>
-					<!-- <Color r="0.1" g="0.1" b="1" a="0.7" /> -->
 				</Texture>
 
+			</Layer>
+
+			<Layer level="ARTWORK">
 				<Texture parentKey="shardIco" file="Interface\ICONS\INV_Misc_Gem_Amethyst_02">
 					<Size x="20" y="20" />
 					<Anchors>
@@ -44,9 +39,6 @@
                     </Anchors>
 				</Texture>
 
-			</Layer>
-
-			<Layer level="ARTWORK">
 				<FontString parentKey="PlayerName" inherits="GameFontHighlightSmall" >
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeKey="$parent.playerInfoNameCol" x="5" y="-4" />

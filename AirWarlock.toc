@@ -11,6 +11,7 @@ embeds.xml
 
 # Core
 Core\AWModuleLoader.lua
+Core\WowFramePool.lua
 Core\WowApi-1.0.lua
 Core\WowUIApi-1.0.lua
 Core\AWSerializer.lua
