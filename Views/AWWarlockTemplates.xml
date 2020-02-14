@@ -1,15 +1,87 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
 
-    <Frame name="AWWarlockFrame" virtual="true">
+	<Frame name="AWWarlockBanishFrame" virtual="true">
+		<Layers>
+			<Layer level="BACKGROUND">
+				
+				<Texture parentKey="Bg" textureSubLevel="-1">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
+
+				<Texture parentKey="playerBanishRow">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<!-- <Color r="0" g="0" b="1" a="1" /> -->
+				</Texture>
+
+				<Texture parentKey="banishTargetInfoIconCol" textureSubLevel="1">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerBanishRow" relativePoint="TOPLEFT" x="0" y="0" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMLEFT" x="27" y="-2" />
+
+                    </Anchors>
+					<Color r="1" g="1" b="1" a="0.6" />
+				</Texture>
+
+				<Texture parentKey="banishTargetInfoNameCol" textureSubLevel="1">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoIconCol" relativePoint="TOPRIGH" x="2" y="-4" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMRIGHT" x="50" y="2" />
+                    </Anchors>
+					<Color r="1" g="0" b="0" a="0.6" />
+				</Texture>
+
+				<Texture parentKey="banishTargetInfoTimerCol" textureSubLevel="1">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoNameCol" relativePoint="TOPRIGH" x="2" y="-2" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMRIGHT" x="-2" y="2" />
+                    </Anchors>
+					<Color r="0" g="0" b="1" a="0.6" />
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture parentKey="banIco" file="Interface\ICONS\spell_shadow_cripple">
+					<Size x="20" y="20" />
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoIconCol" relativePoint="TOPLEFT" x="2" y="2" />
+					</Anchors>
+				</Texture>
+
+				<FontString parentKey="BanTargetName" inherits="GameFontHighlightSmall" >
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoNameCol" x="5" y="-4" />
+					</Anchors>
+				</FontString>
+
+				<FontString parentKey="BanTimerSecondInfo" inherits="GameFontHighlightSmall" >
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.banishTargetInfoTimerCol" relativePoint="TOPRIGHT" x="-1" y="-5" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+
+	<Frame name="AWWarlockPlayerInfoFrame" virtual="true">
         <Layers>
 			<Layer level="BACKGROUND">
-                <Texture parentKey="Bg" textureSubLevel="-1" />
+                <Texture parentKey="Bg" textureSubLevel="-1">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
 
 				<Texture parentKey="playerInfoRow" textureSubLevel="-1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="0" y="-2" />
-                        <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="-25" x="0" />
-                    </Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
 					<Color r="0" g="0" b="0" a="0.6" />
 				</Texture>
 
@@ -50,8 +122,38 @@
 						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoShardCol" relativePoint="TOPRIGHT" x="-1" y="-5" />
 					</Anchors>
 				</FontString>
+
+			
 			</Layer>
         </Layers>
+	</Frame>
+
+    <Frame name="AWWarlockFrame" virtual="true">
+        <Layers>
+			<Layer level="BACKGROUND">
+                <Texture parentKey="Bg" textureSubLevel="-1" />
+			</Layer>
+
+			<Layer level="ARTWORK">
+                <Texture parentKey="PlayerInfoHost">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" x="0" y="0" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="0" y="-25" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BanInfoHost" >
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" x="0" y="0" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="0" y="-25" />
+					</Anchors>
+				</Texture>
+			</Layer>
+        </Layers>
+
+		<Frames>
+			<Frame parentKey="PlayerInfo" inherits="AWWarlockPlayerInfoFrame" />
+			<Frame parentKey="BanInfo" inherits="AWWarlockBanishFrame" />
+		</Frames>
     </Frame>
 
 </Ui>

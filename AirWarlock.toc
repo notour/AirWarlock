@@ -9,6 +9,9 @@
 # Libs & Views
 embeds.xml
 
+# Databases
+Databases\Warlock.db.lua
+
 # Core
 Core\AWModuleLoader.lua
 Core\WowFramePool.lua

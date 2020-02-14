@@ -46,7 +46,13 @@ local Events = {
         "UNIT_SPELLCAST_INTERRUPTED",
         "UNIT_SPELLCAST_START",
         "UNIT_SPELLCAST_STOP",
-        "UNIT_SPELLCAST_SUCCEEDED"
+        "UNIT_SPELLCAST_SUCCEEDED",
+        "SPELLS_CHANGED",
+        --BAG_UPDATE
+    },
+
+    LogTrack = {
+        "COMBAT_LOG_EVENT_UNFILTERED"
     }
 }
 
@@ -90,13 +96,12 @@ function AW:OnInitialize()
 
         local mthod = self._registerScript[event]
         --self:Debug(DEBUG_DEVELOP, "Call AW[" .. mthod .. "](AW, ...) From Event " .. event .. " IsEnabled " .. tostring(AW.IsEnabled));
-        AW[mthod](AW, ...)
+        AW[mthod](AW, event, ...)
         --self:Debug(DEBUG_DEVELOP, "Called");
 
     end)
 
     AW.PlayerName = UnitName("Player");
-
     --self:Debug(DEBUG_DEVELOP, "-- AirWarlock addon loaded")
 end
 
@@ -111,7 +116,9 @@ function AW:UpdateMembersInfo(...)
     local unitPrefix = ""
     local allMembers = {}
     local playerName = UnitName("Player");
-    warlocks[playerName] = { Unit = "Player", UnitName = playerName, Order = 0, Profile = AWProfile:GetCurrent() };
+
+    AW.PlayerProfile = AWProfile:GetProfileUpdate();
+    warlocks[playerName] = { Unit = "Player", UnitName = playerName, Order = 0, Profile = AW.PlayerProfile };
 
     if (UnitInRaid("Player")) then
         unitPrefix = "Raid"
@@ -209,7 +216,7 @@ function AW:UpdateTPList(msg, event)
 end
 
 --[[
-Bind to slash command /AW ...
+    Bind to slash command /AW ...
 ]]
 function AW:SlashCommands(args)
 
@@ -275,23 +282,38 @@ end
 --[[
     Called each time a spell action if done
 ]]
-function AW:PlayerApplySpell(unitTarget, castGUID, spellID)
+function AW:PlayerApplySpell(eventName, unit, castGUID, spellID)
+
     if (spellID ~= nil and AWProfile:DoesNeedUpdateInfo(spellID)) then
         local targetName = UnitName("TARGET");
-
-        if (targetName == nil) then
-            targetName = "";
-        end
-
         local targetGUID = UnitGUID("TARGET");
-        if (targetGUID ~= nil) then
-            targetName = targetName .. " " .. targetGUID;
-        end
 
-        AW:Debug(DEBUG_DEVELOP, " PlayerCastSpell on (".. targetName .. ") spellId " .. spellID);
+        AWProfile:UpdateBySpellInfo(spellID, castGUID, targetName, targetGUID, eventName);
+
         AW:SendProfileUpdate();
-
         AW:UpdateMembersInfo();
+    end
+end
+
+--[[
+    Track log info to track the player actions
+]] 
+function AW:LogTrack(eventName, ...)
+    local timestamp, subevent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags , noidea, effect = CombatLogGetCurrentEventInfo()
+
+    if (sourceName == UnitName("Player")) then
+
+        -- local vargs = {...};
+
+        -- for id, data in pairs(vargs) do
+        --     AW:Debug(DEBUG_INFO, "LogTrack : " .. tostring(id) .. " " .. tostring(data));
+        -- end
+
+        local needToUpdate = AWProfile:UpdateTrackingSpellInfo(destGUID, subevent, effect);
+        if (needToUpdate) then
+            AW:SendProfileUpdate();
+            AW:UpdateMembersInfo();
+        end
     end
 end
 

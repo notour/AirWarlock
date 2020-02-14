@@ -5,7 +5,7 @@
     </Texture>
 
     <Texture name="NRTransparentLightBlackTexture" virtual="true">
-        <Color r="0.1" g="0.1" b="0.1" a="0.8" />
+        <Color r="0.1" g="0.1" b="0.1" a="0.5" />
     </Texture>
 
     <Frame name="NRUIAddonWindow" virtual="true" enabledMouse="true">

@@ -12,6 +12,59 @@ local AceSerializer = LibStub("AceSerializer-3.0");
 
 local WowUIApiHelper = LibStub("WowUIApi-1.0")
 
+--[[
+    Setup the player info into the provided frame
+]]
+local _setupPlayerInfo = function(frame, data, root)
+
+    frame:SetPoint("TOPLEFT", root.PlayerInfoHost);
+    frame:SetPoint("BOTTOMRIGHT", root.PlayerInfoHost);
+
+    if (data.Profile.IsOnline) then
+        frame.PlayerName:SetFontObject("GameFontHighlightSmall");
+    else
+        frame.PlayerName:SetFontObject("GameFontDisable");
+    end
+
+    frame.PlayerName:SetText(data.UnitName);
+    frame.ShardNumber:SetText(data.Profile.NBSoulFragment);
+
+    return root.PlayerInfoHost;
+end
+
+--[[
+    Setup the ban info into the provided frame
+]]
+local _setupBanInfo = function(frame, parentHost, data, root) 
+
+    if (data.Profile.Banish) then
+
+        root.BanInfoHost:ClearAllPoints();
+        root.BanInfoHost:SetPoint("TOPLEFT", parentHost, "BOTTOMLEFT", 10, -2);
+        root.BanInfoHost:SetPoint("BOTTOMRIGHT", parentHost, "BOTTOMRIGHT", 0, -27);
+
+        AW:Debug(DEBUG_DEVELOP, "PARENT HOST " .. tostring(parentHost));
+
+        frame:SetPoint("TOPLEFT", root.BanInfoHost);
+        frame:SetPoint("BOTTOMRIGHT", root.BanInfoHost);
+
+        frame.BanTargetName:SetText(data.Profile.Banish.TargetName);
+
+        local now = GetServerTime();
+        if (data.Profile.Banish.Timeout and data.Profile.Banish.Timeout > now)  then
+            frame.BanTimerSecondInfo:SetText(now - data.Profile.Banish.Timeout);
+        else
+            frame.BanTimerSecondInfo:SetText("");
+        end
+
+        frame:Show();
+        return root.BanInfoHost;
+    elseif (frame) then
+        frame:Hide();
+    end
+    return parentHost;
+end
+
 function AWWarlockViewModule:Initialize(AWModule)
     if (AWWarlockViewModule.Frame) then
         return;
@@ -63,6 +116,7 @@ function AWWarlockViewModule:Initialize(AWModule)
     AWWarlockViewModule.ContentRoot = AWWarlockViewModule.Content;
 
     AWWarlockViewModule.FramePool = WowFramePool:new(AWWarlockViewModule.ContentRoot, "AWWarlockFrame", 40);
+    --AWWarlockViewModule.FrameBanPool = WowFramePool:new(AWWarlockViewModule.ContentRoot, "AWWarlockBanishFrame", 40);
 
     WowUIApiHelper:SetFrameResizeable(UIFrame, 200, 200, function ()
         AWWarlockViewModule:UpdateViewSizes()
@@ -144,14 +198,8 @@ function AWWarlockViewModule:UpdateWarlockInfo(data, parentHostFrame)
         AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, parent.Name .. " <- ".. data.UnitName);
     end
 
-    if (data.Profile.IsOnline) then
-        currentHostFrame.PlayerName:SetFontObject("GameFontHighlightSmall");
-    else
-        currentHostFrame.PlayerName:SetFontObject("GameFontDisable");
-    end
-
-    currentHostFrame.PlayerName:SetText(data.UnitName);
-    currentHostFrame.ShardNumber:SetText(data.Profile.NBSoulFragment);
+    local lastHostItem = _setupPlayerInfo(currentHostFrame.PlayerInfo, data, currentHostFrame);
+    lastHostItem = _setupBanInfo(currentHostFrame.BanInfo, lastHostItem, data, currentHostFrame);
 
     return currentHostFrame;
 end
