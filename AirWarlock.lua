@@ -78,12 +78,22 @@ AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "A
 _AW = {...}
 
 function AW:OnInitialize()
-    AW.db = LibStub("AceDB-3.0"):New("AWConfig", AWOptionDefaults:Load(), true)
+
+    local defaultConfig = AWOptionDefaults:Load();
+    if (AW_WarlocK == nil) then
+        AW_WarlocK = { db = AW.db };
+    elseif (AW_WarlocK ~= nil and AW_WarlocK.Config ~= nil) then
+        defaultConfig.global = AW_WarlocK.Config;
+    end
+
+    AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
     self:RegisterChatCommand("AW", "SlashCommands")
     self:RegisterComm("AWSYNC", "UpdateWarlockData");
 
     local frame = CreateFrame("Frame")
     frame:SetScript("OnUpdate", AW.OnUpdate)
+    
+    AW:Debug("Loading : debugEnabledPrint " .. tostring(AW.db.global.debugEnabledPrint));
 
     self._registerScript = {}
 
@@ -108,6 +118,13 @@ function AW:OnInitialize()
 
     AW.PlayerName = UnitName("Player");
     --self:Debug(DEBUG_DEVELOP, "-- AirWarlock addon loaded")
+end
+
+--[[
+    Called to save the current config
+]]
+function AW:SaveConfig()
+    AW_WarlocK.Config = AW.db.global;
 end
 
 function AW:UpdateMembersInfo(...)
@@ -242,7 +259,13 @@ function AW:SlashCommands(args)
         end
 
         if (args ~= nil and arg1:lower() == "update") then
+            AW:SendProfileUpdate();
             AW.UpdateMembersInfo();
+        end
+
+        if (args ~= nil and arg1:lower() == "reset") then
+            AW_WarlocK = { };
+            AWWarlockView:Reset();
         end
 
         if (args ~= nil and arg1:lower() == "show") then
@@ -253,6 +276,25 @@ function AW:SlashCommands(args)
         if (args ~= nil and arg1:lower() == "hide") then
             AWWarlockView:Hide();
         end
+
+        if (args ~= nil and arg1:lower() == "debug") then
+            local debugON = arg2:lower() == "1" or arg2:lower() == "on";
+            local debugOFF = arg2:lower() == "0" or arg2:lower() == "off";
+
+            local willChanged = AW.db.global.debugEnabledPrint ~= debugON;
+
+            if (debugON and AW.db.global.debugEnabledPrint == false) then
+                AW.db.global.debugEnabledPrint = true;
+                AW:Debug(DEBUG_INFO, "Air warlock : Debug log ON");
+            end
+
+            if (debugOFF and AW.db.global.debugEnabledPrint) then
+                AW:Debug(DEBUG_INFO, "Air warlock : Debug log OFF");
+                AW.db.global.debugEnabledPrint = false;
+            end
+
+            AW:SaveConfig();
+        end
     end
 end
 
@@ -261,7 +303,7 @@ function AW:OnUpdate(elapsed)
         return;
     end
 
-    if (AW.Warlocks ~= nil and AWProfile:HasTimerInfoToUpdate(AW.Warlocks) and AWWarlockView:IsVisible())  then
+    if (AW.Warlocks ~= nil and AWWarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))  then
         AWWarlockView:UpdateAll(AW.Warlocks);
     end
 
@@ -338,15 +380,19 @@ function AW:OnDisable()
 end
 
 function AW:Debug(...)
-    print(...)
+    if (AW.db.global.debugEnabledPrint == true) then
+        print(...)
+    end
 end
 
 function AW:debug(...)
-    AW:Debug(...)
+    if (AW.db.global.debugEnabledPrint == true) then
+        AW:Debug(...)
+    end
 end
 
 function AW:Error(...)
-    AW:Print("|cffff0000[ERROR]|r", ...)
+    AW:Print("|cffff0000[AW ERROR]|r", ...)
 end
 
 function AW:error(...)

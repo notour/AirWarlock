@@ -8,7 +8,7 @@ function AWOptionDefaults:Load()
     return {
         global = {
             debugEnabled = true,
-            debugEnabledPrint = true,
+            debugEnabledPrint = false,
             debugLevel = DEBUG_DEVELOP
         },
         profile = {

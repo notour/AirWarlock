@@ -112,10 +112,11 @@ end
 ]]
 function AWProfileModule:HasTimerInfoToUpdate(warlocks)
     for indx, data in pairs(warlocks) do
-        if (data.Profile ~= nil) then
-            return data.Profile.Banish ~= nil;
+        if (data.Profile ~= nil and data.Profile.Banish ~= nil) then
+            return true;
         end
     end
+    return false;
 end
 
 --[[

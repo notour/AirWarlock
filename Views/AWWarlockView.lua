@@ -94,7 +94,11 @@ function AWWarlockViewModule:Initialize(AWModule)
     -- SetFontObject Setup a font template
     -- SetPoint(point, relativeFrame, relativePoint, x, y)
     UIFrame.TitleText:SetText("Air Warlock");
-    WowUIApiHelper:SetFrameMovable(UIFrame);
+    WowUIApiHelper:SetFrameMovable(UIFrame, function() 
+        AW_WarlocK.View_LEFT = UIFrame:GetLeft();
+        AW_WarlocK.View_TOP = UIParent:GetHeight() - UIFrame:GetTop();
+        AW:Debug("SAVE POSITION LEFT " .. tostring(AW_WarlocK.View_LEFT) .. " TOP " .. tostring(AW_WarlocK.View_TOP));
+    end);
 
     -- Scroll Frame
 
@@ -125,9 +129,20 @@ function AWWarlockViewModule:Initialize(AWModule)
 
     WowUIApiHelper:SetFrameResizeable(UIFrame, 200, 200, function ()
         AWWarlockViewModule:UpdateViewSizes()
+        AW_WarlocK.View_WIDTH = UIFrame:GetWidth();
+        AW_WarlocK.View_HEIGHT = UIFrame:GetHeight();
     end);
 
     UIFrame:Hide();
+end
+
+--[[
+    Called to reset the view parameters
+]]
+function AWWarlockViewModule:Reset()
+    AWWarlockViewModule.Frame:ClearAllPoints();
+    AWWarlockViewModule.Frame:SetSize(350, 400);
+    AWWarlockViewModule.Frame:SetPoint("CENTER");
 end
 
 --[[
@@ -240,6 +255,18 @@ function AWWarlockViewModule:Show()
     if (AWWarlockViewModule.Frame == nil) then
         return;
     end
+
+    if (AW_WarlocK.View_WIDTH ~= nil and AW_WarlocK.View_HEIGHT ~= nil) then
+        AWWarlockViewModule.Frame:SetSize(AW_WarlocK.View_WIDTH, AW_WarlocK.View_HEIGHT);
+        AW:Debug("SETUP SAVED SIZE WIDTH " .. tostring(AW_WarlocK.View_WIDTH) .. " Height " .. tostring(AW_WarlocK.View_HEIGHT));
+    end
+
+    if (AW_WarlocK.View_LEFT ~= nil and AW_WarlocK.View_TOP ~= nil) then
+        AWWarlockViewModule.Frame:ClearAllPoints();
+        AWWarlockViewModule.Frame:SetPoint("TOPLEFT", UIParent, AW_WarlocK.View_LEFT, AW_WarlocK.View_TOP * -1);
+        AW:Debug("SETUP SAVED POSITION LEFT " .. tostring(AW_WarlocK.View_LEFT) .. " TOP " .. tostring(AW_WarlocK.View_TOP));
+    end
+
     AWWarlockViewModule.Frame:Show();
     AWWarlockViewModule:UpdateViewSizes();
 end

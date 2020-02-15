@@ -9,12 +9,17 @@ if not WowUIApiHelper then return end
 --[[
     Set a frame dragable
 ]]
-function WowUIApiHelper:SetFrameMovable(frame, dragArea)
+function WowUIApiHelper:SetFrameMovable(frame, onDragStopCallback)
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    frame:SetScript("OnDragStop", function() 
+        frame:StopMovingOrSizing();
+        if (onDragStopCallback ~= nil) then
+            onDragStopCallback();
+        end
+    end)
 end
 
 --[[
