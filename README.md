@@ -3,11 +3,11 @@ A wow classic addon to help warlock to sync action in a raid
 
 Commands :
 
-**/aw show** : open the plugin window
-**/aw hide** : hide the plugin window
-
-**/aw debug on** : enabled debug info
-**/aw debug off** : disabled debug info
+**/aw show** : open the plugin window<br/>
+**/aw hide** : hide the plugin window<br/>
+<br/>
+**/aw debug on** : enabled debug info<br/>
+**/aw debug off** : disabled debug info<br/>
 
 
 V1:
