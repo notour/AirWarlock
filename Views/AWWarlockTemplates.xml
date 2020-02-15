@@ -11,44 +11,40 @@
 					</Anchors>
 				</Texture>
 
-				<Texture parentKey="playerBanishRow">
+				<Texture parentKey="playerBanishRow" textureSubLevel="-1">
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 						<Anchor point="BOTTOMRIGHT"/>
 					</Anchors>
-					<!-- <Color r="0" g="0" b="1" a="1" /> -->
+					<Color r="0.7" g="0.7" b="0.7" a="0.1" />
 				</Texture>
 
 				<Texture parentKey="banishTargetInfoIconCol" textureSubLevel="1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.playerBanishRow" relativePoint="TOPLEFT" x="0" y="0" />
-						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMLEFT" x="27" y="-2" />
-
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerBanishRow" relativePoint="TOPLEFT" x="1" y="-1" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMLEFT" x="20" y="2" />
                     </Anchors>
-					<Color r="1" g="1" b="1" a="0.6" />
 				</Texture>
 
 				<Texture parentKey="banishTargetInfoNameCol" textureSubLevel="1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoIconCol" relativePoint="TOPRIGH" x="2" y="-4" />
-                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMRIGHT" x="50" y="2" />
+                        <Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoIconCol" relativePoint="TOPRIGHT" x="2" y="0" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMRIGHT" x="-50" y="3" />
                     </Anchors>
-					<Color r="1" g="0" b="0" a="0.6" />
 				</Texture>
 
 				<Texture parentKey="banishTargetInfoTimerCol" textureSubLevel="1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoNameCol" relativePoint="TOPRIGH" x="2" y="-2" />
-                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMRIGHT" x="-2" y="2" />
+                        <Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoNameCol" relativePoint="TOPRIGHT" x="2" y="0" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerBanishRow" relativePoint="BOTTOMRIGHT" x="0" y="3" />
                     </Anchors>
-					<Color r="0" g="0" b="1" a="0.6" />
 				</Texture>
 			</Layer>
 			<Layer level="ARTWORK">
 				<Texture parentKey="banIco" file="Interface\ICONS\spell_shadow_cripple">
 					<Size x="20" y="20" />
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoIconCol" relativePoint="TOPLEFT" x="2" y="2" />
+						<Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoIconCol" relativePoint="TOPLEFT" x="0" y="0" />
 					</Anchors>
 				</Texture>
 
@@ -57,6 +53,13 @@
 						<Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoNameCol" x="5" y="-4" />
 					</Anchors>
 				</FontString>
+
+				<Texture parentKey="BanTimerTargetIconInfo" inherits="GameFontHighlightSmall" >
+					<Size x="15" y="15" />
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.banishTargetInfoTimerCol" x="5" y="-4" />
+					</Anchors>
+				</Texture>
 
 				<FontString parentKey="BanTimerSecondInfo" inherits="GameFontHighlightSmall" >
 					<Anchors>
@@ -82,7 +85,7 @@
 						<Anchor point="TOPLEFT"/>
 						<Anchor point="BOTTOMRIGHT"/>
 					</Anchors>
-					<Color r="0" g="0" b="0" a="0.6" />
+					<Color r="0" g="0" b="0" a="1" />
 				</Texture>
 
 				<Texture parentKey="playerInfoNameCol" textureSubLevel="1">
@@ -92,11 +95,17 @@
                     </Anchors>
 				</Texture>
 
-				<Texture parentKey="playerInfoShardCol" textureSubLevel="1">
+				<Texture parentKey="playerInfoShardIconCol" textureSubLevel="1">
 					<Anchors>
                         <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoNameCol" relativePoint="TOPRIGHT" x="2" />
-						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="TOPRIGHT" x="-2" />
-                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" y="2" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoNameCol" relativePoint="BOTTOMRIGHT" x="24" y="0" />
+                    </Anchors>
+				</Texture>
+
+				<Texture parentKey="playerInfoShardCol" textureSubLevel="1">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoShardIconCol" relativePoint="TOPRIGHT" x="2" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="BOTTOMRIGHT" x="-7" y="2" />
                     </Anchors>
 				</Texture>
 
@@ -104,10 +113,9 @@
 
 			<Layer level="ARTWORK">
 				<Texture parentKey="shardIco" file="Interface\ICONS\INV_Misc_Gem_Amethyst_02">
-					<Size x="20" y="20" />
+					<Size x="22" y="20" />
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoShardCol" relativePoint="TOPLEFT" x="0" y="0" />
-						<Anchor point="BOTTOMLEFT" relativeKey="$parent.playerInfoShardCol" relativePoint="BOTTOMLEFT" x="0" y="0" />
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoShardIconCol" relativePoint="TOPLEFT" x="-2" y="1" />
                     </Anchors>
 				</Texture>
 
@@ -119,11 +127,9 @@
 
 				<FontString parentKey="ShardNumber" inherits="GameFontHighlightSmall" >
 					<Anchors>
-						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoShardCol" relativePoint="TOPRIGHT" x="-1" y="-5" />
+						<Anchor point="TOPRIGHT" relativeKey="$parent.playerInfoShardCol" relativePoint="TOPRIGHT" x="0" y="-4" />
 					</Anchors>
 				</FontString>
-
-			
 			</Layer>
         </Layers>
 	</Frame>
@@ -138,13 +144,13 @@
                 <Texture parentKey="PlayerInfoHost">
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" x="0" y="0" />
-						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="0" y="-25" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="0" y="-24" />
 					</Anchors>
 				</Texture>
 				<Texture parentKey="BanInfoHost" >
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" x="0" y="0" />
-						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="0" y="-25" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="0" y="-24" />
 					</Anchors>
 				</Texture>
 			</Layer>

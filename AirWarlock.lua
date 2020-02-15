@@ -51,6 +51,10 @@ local Events = {
         --BAG_UPDATE
     },
 
+    UpdateTargetMetaInfo = {
+        "RAID_TARGET_UPDATE"
+    },
+
     LogTrack = {
         "COMBAT_LOG_EVENT_UNFILTERED"
     }
@@ -79,6 +83,7 @@ function AW:OnInitialize()
     self:RegisterComm("AWSYNC", "UpdateWarlockData");
 
     local frame = CreateFrame("Frame")
+    frame:SetScript("OnUpdate", AW.OnUpdate)
 
     self._registerScript = {}
 
@@ -164,7 +169,7 @@ end
 ]]
 function AW:SendProfileUpdate()
     local playerName = UnitName("PLAYER");
-    if (AW.Warlocks[playerName] ~= nil) then
+    if (AW.Warlocks ~= nil and AW.Warlocks[playerName] ~= nil) then
         local userData = AWProfile:GetCurrent()
         local userDataStr = AWSerializer:Serialize(userData)
         
@@ -251,32 +256,15 @@ function AW:SlashCommands(args)
     end
 end
 
-function AW:OnUpdate(self, elapsed)
-    -- applying a query is not blocking
-    -- calling this method ProcessResult each frame is to resolve the query made previously
+function AW:OnUpdate(elapsed)
+    if (AW.IsEnabled == false) then
+        return;
+    end
 
-    --if (AW.IsEnabled and (elapsed - AW.LastUpdateTimer) > 5) then
+    if (AW.Warlocks ~= nil and AWProfile:HasTimerInfoToUpdate(AW.Warlocks) and AWWarlockView:IsVisible())  then
+        AWWarlockView:UpdateAll(AW.Warlocks);
+    end
 
-        -- AW:Debug(DEBUG_CRITICAL, elapsed);
-
-        -- local userData = AWProfile.GetCurrent()
-        -- local userDataStr = json.encode(userData);
-        -- local target = "";
-
-        -- if (UnitInRaid("Player")) then
-        --     target = "RAID";
-        -- elseif (UnitInParty("Player")) then
-        --     target = "PARTY"
-        -- end
-
-        -- if (target ~= "") then
-        --     SendAddonMessage("AWSYNC", userDataStr, target);
-        -- else
-        --     AW:Debug(DEBUG_CRITICAL, userDataStr);
-        -- end
-
-        -- AW.LastUpdateTimer = elapsed;
-    --end
 end
 
 --[[
@@ -287,8 +275,9 @@ function AW:PlayerApplySpell(eventName, unit, castGUID, spellID)
     if (spellID ~= nil and AWProfile:DoesNeedUpdateInfo(spellID)) then
         local targetName = UnitName("TARGET");
         local targetGUID = UnitGUID("TARGET");
+        local targetIcon = GetRaidTargetIndex("TARGET");
 
-        AWProfile:UpdateBySpellInfo(spellID, castGUID, targetName, targetGUID, eventName);
+        AWProfile:UpdateBySpellInfo(spellID, castGUID, targetName, targetGUID, targetIcon, eventName);
 
         AW:SendProfileUpdate();
         AW:UpdateMembersInfo();
@@ -315,6 +304,19 @@ function AW:LogTrack(eventName, ...)
             AW:UpdateMembersInfo();
         end
     end
+end
+
+function AW:UpdateTargetMetaInfo(eventName, ...)
+
+    local vargs = {...};
+    local vargsInfo = "";
+
+    for id, data in pairs(vargs) do
+        --AW:Debug(DEBUG_INFO, "LogTrack : " .. tostring(id) .. " " .. tostring(data));
+        vargsInfo = vargsInfo .. tostring(id) .. " " .. tostring(data) .. ", ";
+    end
+
+    AW:Debug(DEBUG_INFO, "[UpdateTargetMetaInfo] : " .. tostring(eventName) .. " " .. tostring(vargsInfo));
 end
 
 --[[

@@ -8,8 +8,6 @@
 local AWWarlockViewModule = AWModuleLoader:CreateModule("AWWarlockView");
 
 local WowFramePool = AWModuleLoader:ImportModule("WowFramePool");
-local AceSerializer = LibStub("AceSerializer-3.0");
-
 local WowUIApiHelper = LibStub("WowUIApi-1.0")
 
 --[[
@@ -39,11 +37,12 @@ local _setupBanInfo = function(frame, parentHost, data, root)
 
     if (data.Profile.Banish) then
 
+        local templateHeight = root.BanInfoHost:GetHeight();
         root.BanInfoHost:ClearAllPoints();
-        root.BanInfoHost:SetPoint("TOPLEFT", parentHost, "BOTTOMLEFT", 10, -2);
-        root.BanInfoHost:SetPoint("BOTTOMRIGHT", parentHost, "BOTTOMRIGHT", 0, -27);
+        root.BanInfoHost:SetPoint("TOPLEFT", parentHost, "BOTTOMLEFT", 10, 0);
+        root.BanInfoHost:SetPoint("BOTTOMRIGHT", parentHost, "BOTTOMRIGHT", 0, templateHeight * -1);
 
-        AW:Debug(DEBUG_DEVELOP, "PARENT HOST " .. tostring(parentHost));
+        --AW:Debug(DEBUG_DEVELOP, "PARENT HOST " .. tostring(parentHost) .. " Height " .. templateHeight);
 
         frame:SetPoint("TOPLEFT", root.BanInfoHost);
         frame:SetPoint("BOTTOMRIGHT", root.BanInfoHost);
@@ -52,9 +51,15 @@ local _setupBanInfo = function(frame, parentHost, data, root)
 
         local now = GetServerTime();
         if (data.Profile.Banish.Timeout and data.Profile.Banish.Timeout > now)  then
-            frame.BanTimerSecondInfo:SetText(now - data.Profile.Banish.Timeout);
+            frame.BanTimerSecondInfo:SetText(data.Profile.Banish.Timeout - now);
         else
             frame.BanTimerSecondInfo:SetText("");
+        end
+
+        if (data.Profile.Banish.TargetIcon ~= nil) then
+            frame.BanTimerTargetIconInfo:SetTexture("Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_" .. data.Profile.Banish.TargetIcon);
+        else
+            frame.BanTimerTargetIconInfo:SetTexture("");
         end
 
         frame:Show();
@@ -150,7 +155,7 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     for key, data in pairs(AWWarlockViewModule.PlayerFrames) do
         if (warlocks[key] == nil) then
             AWWarlockViewModule.PlayerFrames[key] = nil;
-            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
+            --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
             AWWarlockViewModule.FramePool:Recycle(data);
         end
     end
@@ -198,8 +203,21 @@ function AWWarlockViewModule:UpdateWarlockInfo(data, parentHostFrame)
         AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, parent.Name .. " <- ".. data.UnitName);
     end
 
+    local hostUsed = {};
     local lastHostItem = _setupPlayerInfo(currentHostFrame.PlayerInfo, data, currentHostFrame);
+    hostUsed[tostring(lastHostItem)] = lastHostItem;
+
     lastHostItem = _setupBanInfo(currentHostFrame.BanInfo, lastHostItem, data, currentHostFrame);
+    hostUsed[tostring(lastHostItem)] = lastHostItem;
+
+    local totalHeight = 0;
+    for indx, item in pairs(hostUsed) do
+        if (item ~= nil) then
+            totalHeight = totalHeight + item:GetHeight();
+        end
+    end
+
+    currentHostFrame:SetSize(100, totalHeight);
 
     return currentHostFrame;
 end
@@ -209,6 +227,13 @@ function AWWarlockViewModule:Hide()
         return;
     end
     AWWarlockViewModule.Frame:Hide()
+end
+
+function AWWarlockViewModule:IsVisible()
+    if (AWWarlockViewModule.Frame == nil) then
+        return false;
+    end
+    return AWWarlockViewModule.Frame:IsVisible();
 end
 
 function AWWarlockViewModule:Show()

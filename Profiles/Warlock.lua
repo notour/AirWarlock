@@ -12,29 +12,15 @@ local isBanishSpellFunc = function (numberSpellId)
     return false;
 end
 
-local createSpellInfo = function(spellId, castGUID, targetName, targetGUID, timeout)
+local createSpellInfo = function(spellId, castGUID, targetName, targetGUID, targetIcon, timeout)
     return {
         SpellId = spellId,
         CastUID = castGUID,
         TargetName = targetName,
         TargetUID = targetGUID,
-        Timeout = timeout
+        Timeout = timeout,
+        TargetIcon = targetIcon
     }
-end
-
-local getAuraExpirationTime = function(target, spellId)
-    AW:Debug("getAuraExpirationTime " .. tostring(target));
-
-    for index=0, 41 do
-        local name, _, _, _, _, expirationTime, _, _, _, auraSpellId = UnitDebuff(target, index, "INCLUDE_NAME_PLATE_ONLY");
-        if (name ~= nil) then
-            AW:Debug(DEBUG_INFO, "UnitAura([" .. index .. "] : " .. tostring(name) .. " " .. tostring(expirationTime) );
-            if (auraSpellId == spellId) then
-                return expirationTime;
-            end
-        end
-    end
-    return nil;
 end
 
 local updateSpellInfo = function(castGUID)
@@ -70,7 +56,7 @@ end
 --[[
     Update the current info from a spell action
 ]]
-function AWProfileModule:UpdateBySpellInfo(spellId, castGUID, targetName, targetGUID, eventName)
+function AWProfileModule:UpdateBySpellInfo(spellId, castGUID, targetName, targetGUID, targetIcon, eventName)
     local numberSpellId = tonumber(spellId);
 
     local currentProfile = AWProfileModule:GetCurrent(self);
@@ -84,13 +70,16 @@ function AWProfileModule:UpdateBySpellInfo(spellId, castGUID, targetName, target
         else
             duration = spellId
         end
-        currentProfile.Banish = createSpellInfo(spellId, castGUID, targetName, targetGUID, expirationTime);
+        currentProfile.Banish = createSpellInfo(spellId, castGUID, targetName, targetGUID, targetIcon, expirationTime);
         --AW:Debug(DEBUG_INFO, "BANISH : " .. targetName .. " Expired in " .. tostring(duration) .. " s");
         return true;
     end
     return false;
 end
 
+--[[
+    Update the tracking info about spells
+]]
 function AWProfileModule:UpdateTrackingSpellInfo(destGUID, subevent, spellName)
 
     if (spellName == nil) then
@@ -116,6 +105,17 @@ function AWProfileModule:UpdateTrackingSpellInfo(destGUID, subevent, spellName)
     end
 
     return false;
+end
+
+--[[
+    Gets a value indicating if the current data need a real time update
+]]
+function AWProfileModule:HasTimerInfoToUpdate(warlocks)
+    for indx, data in pairs(warlocks) do
+        if (data.Profile ~= nil) then
+            return data.Profile.Banish ~= nil;
+        end
+    end
 end
 
 --[[
