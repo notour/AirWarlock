@@ -1,0 +1,88 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+
+    <Texture name="NRLightBlackTexture" virtual="true">
+        <Color r="0.1" g="0.1" b="0.1"/>
+    </Texture>
+
+    <Texture name="NRTransparentLightBlackTexture" virtual="true">
+        <Color r="0.1" g="0.1" b="0.1" a="0.5" />
+    </Texture>
+
+    <Frame name="NRUIAddonWindow" virtual="true" enabledMouse="true">
+		<Layers>
+			<Layer level="BORDER">
+				<Texture parentKey="TopBorder" inherits="NRLightBlackTexture">
+					<Anchors>
+						<Anchor point="TOPLEFT" />
+                        <Anchor point="TOPRIGHT" y="1" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BottomBorder" inherits="NRLightBlackTexture">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" />
+                        <Anchor point="BOTTOMRIGHT" y="1" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="LeftBorder" inherits="NRLightBlackTexture">
+					<Anchors>
+                        <Anchor point="TOPLEFT" />
+                        <Anchor point="BOTTOMLEFT" x="1" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="RightBorder" inherits="NRLightBlackTexture">
+					<Anchors>
+                        <Anchor point="TOPRIGHT" />
+                        <Anchor point="BOTTOMRIGHT" x="1" />
+					</Anchors>
+				</Texture>
+			</Layer>
+
+            <Layer level="BACKGROUND">
+                <Texture parentKey="TitleBg" inherits="NRLightBlackTexture">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" y="0" x="0" />
+                        <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="-24" x="0" />
+                    </Anchors>
+                </Texture>
+                <Texture parentKey="DialogBg" inherits="NRTransparentLightBlackTexture">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.TitleBg" relativePoint="BOTTOMLEFT" y="0" x="0" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" y="1" x="0" />
+                    </Anchors>
+                </Texture>
+			</Layer>
+
+            <Layer level="OVERLAY">
+				<Texture parentKey="TopLeftCorner" inherits="NRLightBlackTexture">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="-6" y="1"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="TopRightCorner" inherits="NRLightBlackTexture">
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="0" y="1"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="TopBorder" inherits="NRLightBlackTexture">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.TopLeftCorner" relativePoint="TOPRIGHT"/>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.TopRightCorner" relativePoint="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="TitleText" inherits="GameFontHighlightSmall">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="3" y="-5" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button parentKey="CloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="4" y="5"/>
+				</Anchors>
+			</Button>
+		</Frames>
+    </Frame>
+
+</Ui>

@@ -1,0 +1,29 @@
+## Interface : 11302
+## Title : Air Warlock
+## Author : Mickael Thumerel
+## Version : 1.0
+
+## DefaultState: enabled
+## SavedVariablesPerCharacter: AW_WarlocK
+
+# Libs & Views
+embeds.xml
+
+# Databases
+Databases\Warlock.db.lua
+
+# Core
+Core\AWModuleLoader.lua
+Core\WowFramePool.lua
+Core\WowApi-1.0.lua
+Core\WowUIApi-1.0.lua
+Core\AWSerializer.lua
+Core\AWOptionsDefault.lua
+
+Views\AWWarlockView.lua
+
+# Profiles
+Profiles\Warlock.lua
+
+# Entry Point
+AirWarlock.lua
