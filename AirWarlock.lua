@@ -89,6 +89,8 @@ function AW:OnInitialize()
     AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
     self:RegisterChatCommand("AW", "SlashCommands")
     self:RegisterComm("AWSYNC", "UpdateWarlockData");
+    self:RegisterComm("AWASSIGN-TGT", "SetAssignationTargetCallback");
+    self:RegisterComm("AWASSIGN-TGT-CLR", "ClearAssignationTargetCallback");
 
     local frame = CreateFrame("Frame")
     frame:SetScript("OnUpdate", AW.OnUpdate)
@@ -281,8 +283,6 @@ function AW:SlashCommands(args)
             local debugON = arg2:lower() == "1" or arg2:lower() == "on";
             local debugOFF = arg2:lower() == "0" or arg2:lower() == "off";
 
-            local willChanged = AW.db.global.debugEnabledPrint ~= debugON;
-
             if (debugON and AW.db.global.debugEnabledPrint == false) then
                 AW.db.global.debugEnabledPrint = true;
                 AW:Debug(DEBUG_INFO, "Air warlock : Debug log ON");
@@ -359,6 +359,74 @@ function AW:UpdateTargetMetaInfo(eventName, ...)
     end
 
     AW:Debug(DEBUG_INFO, "[UpdateTargetMetaInfo] : " .. tostring(eventName) .. " " .. tostring(vargsInfo));
+end
+
+--[[
+    Set the assignation target
+]]
+function AW:SetAssignationTargetCallback(prefix, message, msgType, sender)
+
+    if (message == nil) then
+        return
+    end
+
+    -- sender ~= UnitName("Player")
+    local serializedData = AWSerializer:Deserialize(message);
+    
+    if (serializedData ~= nil and serializedData.UnitName ~= nil and serializedData.UnitName == UnitName("Player")) then
+        AW:SetAssignationTarget(serializedData.TargetIndex, serializedData.UnitName);
+    end
+end
+
+--[[
+    Set the assignation target
+]]
+function AW:SetAssignationTarget(targetIndex, unitName)
+    if (unitName == UnitName("Player")) then
+        AWProfile:SetAssignationTarget(targetIndex);
+        AW:Debug("ASSIGN " .. targetIndex .. " to " .. unitName);
+
+        AW:SendProfileUpdate();
+        AW:UpdateMembersInfo();
+    else
+
+        local serializedData = AWSerializer:Serialize({ ["UnitName"] = unitName, ["TargetIndex"] = targetIndex });
+        local target = "";
+        if (UnitInRaid("Player")) then
+            target = "RAID";
+        elseif (UnitInParty("Player")) then
+            target = "PARTY"
+        end
+
+        AW:SendCommMessage("AWASSIGN-TGT", serializedData, target);
+    end
+end
+
+--[[
+    Clear the current target assignation
+]]
+function AW:ClearAssignationTargetCallback()
+
+    AWProfile:SetAssignationTarget();
+    AW:SendProfileUpdate();
+    AW:UpdateMembersInfo();
+end
+
+--[[
+    Clear the current target assignation
+]]
+function AW:ClearAssignationTarget()
+
+    local target = "";
+    if (UnitInRaid("Player")) then
+        target = "RAID";
+    elseif (UnitInParty("Player")) then
+        target = "PARTY"
+    end
+
+    AW:SendCommMessage("AWASSIGN-TGT-CLR", "", target);
+
+    AW:ClearAssignationTargetCallback();
 end
 
 --[[

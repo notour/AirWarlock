@@ -8,13 +8,25 @@
 local AWWarlockViewModule = AWModuleLoader:CreateModule("AWWarlockView");
 
 local WowFramePool = AWModuleLoader:ImportModule("WowFramePool");
+local AWL = AWModuleLoader:ImportModule("AWLocalization");
+
 local WowUIApiHelper = LibStub("WowUIApi-1.0")
+
+local raidTargetInfo = {
+    [1] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1", Name = AWL:L("Star") },
+    [2] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_2", Name = AWL:L("Circle") },
+    [3] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_3", Name = AWL:L("Diamond") },
+    [4] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_4", Name = AWL:L("Triangle") },
+    [5] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_5", Name = AWL:L("Moon") },
+    [6] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_6", Name = AWL:L("Square") },
+    [7] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_7", Name = AWL:L("Cross") },
+    [8] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_8", Name = AWL:L("Skull") },
+}
 
 --[[
     Setup the player info into the provided frame
 ]]
 local _setupPlayerInfo = function(frame, data, root)
-
     frame:SetPoint("TOPLEFT", root.PlayerInfoHost);
     frame:SetPoint("BOTTOMRIGHT", root.PlayerInfoHost);
 
@@ -26,6 +38,13 @@ local _setupPlayerInfo = function(frame, data, root)
 
     frame.PlayerName:SetText(data.UnitName);
     frame.ShardNumber:SetText(data.Profile.NBSoulFragment);
+
+    if (data.Profile.AssignRaidTarget ~= nil) then
+        frame.assignTargetIco:SetTexture(raidTargetInfo[data.Profile.AssignRaidTarget].Icon);
+        frame.assignTargetIco:Show();
+    else
+        frame.assignTargetIco:Hide();
+    end
 
     return root.PlayerInfoHost;
 end
@@ -57,7 +76,7 @@ local _setupBanInfo = function(frame, parentHost, data, root)
         end
 
         if (data.Profile.Banish.TargetIcon ~= nil) then
-            frame.BanTimerTargetIconInfo:SetTexture("Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_" .. data.Profile.Banish.TargetIcon);
+            frame.BanTimerTargetIconInfo:SetTexture(raidTargetInfo[data.Profile.Banish.TargetIcon].Icon);
         else
             frame.BanTimerTargetIconInfo:SetTexture("");
         end
@@ -68,6 +87,58 @@ local _setupBanInfo = function(frame, parentHost, data, root)
         frame:Hide();
     end
     return parentHost;
+end
+
+local _setupAssignMenu = function(frame, data)
+    
+    AW:Debug("_setupAssignMenu");
+
+    frame:SetScript("OnMouseUp", function(self, buttonUse, ...)
+
+        if (buttonUse ~= "RightButton") then
+            return;
+        end
+
+        local assignMenu = {
+                { text = AWL:L("Assign"), isTitle = true},
+                -- { text = "Cible", hasArrow = true,
+                --     menuList = {
+                --         { text = "square", func = function() AW:Debug("You've chosen option 3"); end }
+                --     } 
+                -- },
+                -- { text = "Malédiction", hasArrow = true,
+                --     menuList = {
+                --         { text = "Element", func = function() AW:Debug("You've chosen option 3"); end }
+                --     } 
+                -- }
+            }
+
+            local targets = { };
+
+            for i=1, 8 do
+                table.insert(targets, 0, { text = raidTargetInfo[i].Name, icon = raidTargetInfo[i].Icon, arg1 = data.UnitName, func = function(_, unitName)
+                    AW:SetAssignationTarget(i, unitName);
+                    frame.ContextMenu:Hide();
+                end })
+            end
+
+            table.insert(assignMenu, { text = AWL:L("Clear Target"), func = function()
+                AW:ClearAssignationTarget();
+                frame.ContextMenu:Hide();
+            end })
+
+            table.insert(assignMenu, { text = AWL:L("Target"), hasArrow = true, menuList = targets });
+
+        if (frame.ContextMenu == nil) then
+            -- Note that this frame must be named for the dropdowns to work.
+            local menuFrame = CreateFrame("Frame", "AssignMenu" .. data.UnitName, frame, "UIDropDownMenuTemplate")
+            frame.ContextMenu = menuFrame;
+            menuFrame.targetName = data.UnitName;
+        end
+
+        EasyMenu(assignMenu, frame.ContextMenu, "cursor", 0, 0, "MENU", 5);
+        frame.ContextMenu:Show();
+    end);
 end
 
 function AWWarlockViewModule:Initialize(AWModule)
@@ -204,6 +275,9 @@ function AWWarlockViewModule:UpdateWarlockInfo(data, parentHostFrame)
         currentHostFrame.bg:SetColorTexture(0.5, 0.5, 0.5, 0.2);
 
         currentHostFrame.Name = data.UnitName;
+
+        currentHostFrame.PlayerInfo:SetScript("OnLoad", _setupAssignMenu);
+        _setupAssignMenu(currentHostFrame.PlayerInfo, data);
     end
 
     currentHostFrame:ClearAllPoints(true);
@@ -258,13 +332,11 @@ function AWWarlockViewModule:Show()
 
     if (AW_WarlocK.View_WIDTH ~= nil and AW_WarlocK.View_HEIGHT ~= nil) then
         AWWarlockViewModule.Frame:SetSize(AW_WarlocK.View_WIDTH, AW_WarlocK.View_HEIGHT);
-        AW:Debug("SETUP SAVED SIZE WIDTH " .. tostring(AW_WarlocK.View_WIDTH) .. " Height " .. tostring(AW_WarlocK.View_HEIGHT));
     end
 
     if (AW_WarlocK.View_LEFT ~= nil and AW_WarlocK.View_TOP ~= nil) then
         AWWarlockViewModule.Frame:ClearAllPoints();
         AWWarlockViewModule.Frame:SetPoint("TOPLEFT", UIParent, AW_WarlocK.View_LEFT, AW_WarlocK.View_TOP * -1);
-        AW:Debug("SETUP SAVED POSITION LEFT " .. tostring(AW_WarlocK.View_LEFT) .. " TOP " .. tostring(AW_WarlocK.View_TOP));
     end
 
     AWWarlockViewModule.Frame:Show();

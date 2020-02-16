@@ -46,11 +46,8 @@ end
 ]]
 function AWProfileModule:GetProfileUpdate()
     local currentProfile = AWProfileModule:GetCurrent(self);
-
-    self.currentProfile = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId);
-
-    self.currentProfile = currentProfile;
-    return self.currentProfile;
+    currentProfile.NBSoulFragment = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId);
+    return currentProfile;
 end
 
 --[[
@@ -105,6 +102,15 @@ function AWProfileModule:UpdateTrackingSpellInfo(destGUID, subevent, spellName)
     end
 
     return false;
+end
+
+--[[
+    Setup the current raid target assign to the current user
+]]
+function AWProfileModule:SetAssignationTarget(raidTargetId)
+    local currentProfile = AWProfileModule:GetCurrent(self);
+    currentProfile.AssignRaidTarget = raidTargetId;
+    AW:Debug("ASSIGN SetAssignationTarget " .. tostring(raidTargetId));
 end
 
 --[[
