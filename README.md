@@ -1,5 +1,5 @@
 # AirWarlock
-A wow classic addon to help warlock to sync action in a raid
+A wow classic addon to help warlock to synchronize theire action in a raid/group
 
 Commands :
 
