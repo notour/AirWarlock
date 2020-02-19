@@ -23,8 +23,41 @@ local createSpellInfo = function(spellId, castGUID, targetName, targetGUID, targ
     }
 end
 
-local updateSpellInfo = function(castGUID)
+--[[
+    list all the available curse on castable by the player
+]]
+local _listAllAvailabledCurseOnPlayer = function()
+    local curses = {};
+    for key,data in pairs(AWWarlockDB.Curses) do
+        local maxSpellId = nil;
+        local maxSpellManaCost = -1;
+        for indx,spellId in pairs(data.Spells) do
+            local usable, _ = IsUsableSpell(spellId);
 
+            local manaCosts = WowApiHelper:GetSpellCostByType(spellId, WowApiHelper.Const.CostType.Mana);
+
+            if (usable and manaCosts ~= nil and (maxSpellId == nil or manaCosts > maxSpellManaCost)) then
+
+                maxSpellId = spellId;
+                maxSpellManaCost = manaCosts;
+            end
+
+        end
+
+        if (maxSpellId ~= nil) then
+            table.insert(curses, maxSpellId);
+        end
+    end
+
+    for indx,spellId in pairs(curses) do
+        local name, rank = GetSpellInfo(spellId);
+        AW:Debug("Availabled curse ".. spellId .. " : |Hspell:" .. spellId .."|h|r|cff71d5ff[" .. tostring(name) .. " " .. tostring(rank) .. "]|r|h");
+    end
+
+    return curses;
+end
+
+local updateSpellInfo = function(castGUID)
 end
 
 --[[
@@ -34,9 +67,15 @@ function AWProfileModule:GetCurrent()
     if (self.currentProfile == nil) then     
         self.currentProfile = {
             Name = UnitName("player"),
-            NBSoulFragment = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId)
+            NBSoulFragment = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId),
+            AvailableCurses = _listAllAvailabledCurseOnPlayer()
         };
     end
+
+    -- for indx,spellId in pairs(self.currentProfile.AvailableCurses) do
+    --     local name, rank = GetSpellInfo(spellId);
+    --     AW:Debug("Availabled curse ".. spellId .. " : |Hspell:" .. spellId .."|h|r|cff71d5ff[" .. tostring(name) .. " " .. tostring(rank) .. "]|r|h");
+    -- end
 
     return self.currentProfile;
 end
@@ -44,7 +83,7 @@ end
 --[[
     Update and Get the current user profile
 ]]
-function AWProfileModule:GetProfileUpdate()
+function AWProfileModule:GetProfileUpdated()
     local currentProfile = AWProfileModule:GetCurrent(self);
     currentProfile.NBSoulFragment = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId);
     return currentProfile;
@@ -114,6 +153,15 @@ function AWProfileModule:SetAssignationTarget(raidTargetId)
 end
 
 --[[
+    Setup the current raid target assign to the current user
+]]
+function AWProfileModule:SetCurseAssignationTarget(spellId)
+    local currentProfile = AWProfileModule:GetCurrent(self);
+    currentProfile.AssignCurse = spellId;
+    AW:Debug("ASSIGN SetAssignationTarget " .. tostring(spellId));
+end
+
+--[[
     Gets a value indicating if the current data need a real time update
 ]]
 function AWProfileModule:HasTimerInfoToUpdate(warlocks)
@@ -137,14 +185,12 @@ function AWProfileModule:DoesNeedUpdateInfo(spellId)
         end
     end
 
-    local costs = GetSpellPowerCost(spellId);
-    for id, data in pairs(costs) do
-        if (data.name == "SOUL_SHARDS") then
-            AW:Debug(DEBUG_DEVELOP, "GetSpellPowerCost : " .. data.name);
-            return true;
-        end
+    local name = GetSpellInfo(spellId);
+    local shardCost = WowApiHelper:GetSpellCostByType(spellId, WowApiHelper.Const.CostType.SoulShards);
+    if (shardCost ~= nil and shardCost > 0) then
+        AW:Debug(DEBUG_DEVELOP, "Consume shard spell : " .. tostring(name) .. " " .. tostring(shardCost));
+        return true;
     end
-
 
     return isBanishSpellFunc(numberSpellId);
 end

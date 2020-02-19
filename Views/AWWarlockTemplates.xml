@@ -88,15 +88,23 @@
 					<Color r="0" g="0" b="0" a="1" />
 				</Texture>
 
+				<Texture parentKey="playerInfoAssignIconCol" textureSubLevel="1">
+					<Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoRow" relativePoint="TOPLEFT" x="4" y="-2" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="BOTTOMLEFT" x="15" y="0" />
+                    </Anchors>
+					<!-- <Color r="0.7" g="0" b="0" a="1" /> -->
+				</Texture>
+
 				<Texture parentKey="playerInfoNameCol" textureSubLevel="1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoRow" relativePoint="TOPLEFT" x="2" y="-2" />
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoAssignIconCol" relativePoint="TOPRIGHT" x="2" y="0" />
                         <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoRow" relativePoint="BOTTOMRIGHT" x="-70" y="2" />
                     </Anchors>
 					<!-- <Color r="0" g="0" b="0.7" a="1" /> -->
 				</Texture>
 
-				<Texture parentKey="playerInfoAssignIconCol" textureSubLevel="1">
+				<Texture parentKey="playerInfoCurseIconCol" textureSubLevel="1">
 					<Anchors>
                         <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoNameCol" relativePoint="TOPRIGHT" x="2" y="0" />
                         <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoNameCol" relativePoint="BOTTOMRIGHT" x="15" y="0" />
@@ -106,8 +114,8 @@
 
 				<Texture parentKey="playerInfoShardIconCol" textureSubLevel="1">
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoAssignIconCol" relativePoint="TOPRIGHT" x="4" y="0" />
-                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoAssignIconCol" relativePoint="BOTTOMRIGHT" x="24" y="0" />
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoCurseIconCol" relativePoint="TOPRIGHT" x="4" y="0" />
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.playerInfoCurseIconCol" relativePoint="BOTTOMRIGHT" x="24" y="0" />
                     </Anchors>
 				</Texture>
 
@@ -131,7 +139,7 @@
 				<Texture parentKey="assignTargetIco">
 					<Size x="15" y="15" />
 					<Anchors>
-                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoAssignIconCol" relativePoint="TOPLEFT" x="-2" y="-3" />
+                        <Anchor point="TOPLEFT" relativeKey="$parent.playerInfoAssignIconCol" relativePoint="TOPLEFT" x="0" y="-2" />
                     </Anchors>
 				</Texture>
 
@@ -148,6 +156,14 @@
 				</FontString>
 			</Layer>
         </Layers>
+		<Frames>
+			<button parentKey="assignCurseIco">
+				<Size x="15" y="15" />
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.playerInfoCurseIconCol" relativePoint="TOPLEFT" x="-2" y="-2" />
+				</Anchors>
+			</button>
+		</Frames>
 	</Frame>
 
     <Frame name="AWWarlockFrame" virtual="true">

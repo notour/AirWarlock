@@ -14,6 +14,8 @@ local _localizationDB = {
         ["Target"] = "Cible",
         ["Clear Target"] = "Effacer les cibles",
         ["Assign"] = "Assignation",
+        ["Curse"] = "Malédiction",
+        ["Clear Curse"] = "Effacer la malédiction assignation"
         
     },
 
@@ -29,6 +31,8 @@ local _localizationDB = {
         ["Target"] = "Target",
         ["Clear Target"] = "Clear Target",
         ["Assign"] = "Assign",
+        ["Curse"] = "Curse",
+        ["Clear Curse"] = "Clear assigned cursed"
     },
     
     ["enGB"] = {
@@ -43,6 +47,8 @@ local _localizationDB = {
         ["Target"] = "Target",
         ["Clear Target"] = "Clear Target",
         ["Assign"] = "Assign",
+        ["Curse"] = "Curse",
+        ["Clear Curse"] = "Clear assigned cursed"
     },
 }
 

@@ -46,6 +46,26 @@ local _setupPlayerInfo = function(frame, data, root)
         frame.assignTargetIco:Hide();
     end
 
+    if (data.Profile.AssignCurse ~= nil) then
+        local name, _, icon = GetSpellInfo(data.Profile.AssignCurse);
+        frame.assignCurseIco:SetNormalTexture(icon);
+        frame.assignCurseIco:SetScript("OnEnter", function()
+            GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_MOUSE", 0, -50);
+            GameTooltip:SetText(name)
+            GameTooltip:Show()
+        end);
+
+        frame.assignCurseIco:SetScript("OnLeave", function()
+            GameTooltip:Hide()
+        end);
+
+        GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_CURSOR");
+        GameTooltip:SetText(name);
+        frame.assignCurseIco:Show();
+    else
+        frame.assignCurseIco:Hide();
+    end
+
     return root.PlayerInfoHost;
 end
 
@@ -113,21 +133,40 @@ local _setupAssignMenu = function(frame, data)
                 -- }
             }
 
-            local targets = { };
+        local targets = { };
 
-            for i=1, 8 do
-                table.insert(targets, 0, { text = raidTargetInfo[i].Name, icon = raidTargetInfo[i].Icon, arg1 = data.UnitName, func = function(_, unitName)
-                    AW:SetAssignationTarget(i, unitName);
+        for i=1, 8 do
+            table.insert(targets, 0, { text = raidTargetInfo[i].Name, icon = raidTargetInfo[i].Icon, arg1 = data.UnitName, func = function(_, unitName)
+                AW:SetAssignationTarget(i, unitName);
+                frame.ContextMenu:Hide();
+            end })
+        end
+
+        table.insert(assignMenu, { text = AWL:L("Clear Target"), func = function()
+            AW:ClearAssignationTarget();
+            frame.ContextMenu:Hide();
+        end })
+
+        table.insert(assignMenu, { text = AWL:L("Target"), hasArrow = true, menuList = targets });
+
+        if (data.Profile.AvailableCurses ~= nil) then
+            local curses = {};
+
+            table.insert(curses, { text = AWL:L("Clear Curse"), icon = icon, arg1 = data.UnitName, func = function(_, unitName, spellId)
+                AW:SetCurseAssignationTarget(nil, unitName);
+                frame.ContextMenu:Hide();
+            end })
+
+            for indx, curseSpellCast in pairs(data.Profile.AvailableCurses) do
+                local name, _, icon = GetSpellInfo(curseSpellCast)
+                table.insert(curses, { text = name, icon = icon, arg1 = data.UnitName, arg2 = curseSpellCast, func = function(_, unitName, spellId)
+                    AW:SetCurseAssignationTarget(spellId, unitName);
                     frame.ContextMenu:Hide();
                 end })
             end
 
-            table.insert(assignMenu, { text = AWL:L("Clear Target"), func = function()
-                AW:ClearAssignationTarget();
-                frame.ContextMenu:Hide();
-            end })
-
-            table.insert(assignMenu, { text = AWL:L("Target"), hasArrow = true, menuList = targets });
+            table.insert(assignMenu, { text = AWL:L("Curse"), hasArrow = true, menuList = curses });
+        end
 
         if (frame.ContextMenu == nil) then
             -- Note that this frame must be named for the dropdowns to work.

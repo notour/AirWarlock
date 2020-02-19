@@ -51,6 +51,10 @@ local Events = {
         --BAG_UPDATE
     },
 
+    WhenBagUpdate = {
+        "BAG_UPDATE"
+    },
+
     UpdateTargetMetaInfo = {
         "RAID_TARGET_UPDATE"
     },
@@ -77,6 +81,14 @@ local AWWarlockView = AWModuleLoader:ImportModule("AWWarlockView");
 AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
 _AW = {...}
 
+
+local _getComTarget = function()
+    if (UnitInRaid("Player")) then
+        return "RAID";
+    end
+    return "PARTY";
+end
+
 function AW:OnInitialize()
 
     local defaultConfig = AWOptionDefaults:Load();
@@ -89,6 +101,7 @@ function AW:OnInitialize()
     AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
     self:RegisterChatCommand("AW", "SlashCommands")
     self:RegisterComm("AWSYNC", "UpdateWarlockData");
+    self:RegisterComm("AWSYNC-ASK", "SendProfileUpdate");
     self:RegisterComm("AWASSIGN-TGT", "SetAssignationTargetCallback");
     self:RegisterComm("AWASSIGN-TGT-CLR", "ClearAssignationTargetCallback");
 
@@ -113,7 +126,7 @@ function AW:OnInitialize()
 
         local mthod = self._registerScript[event]
         --self:Debug(DEBUG_DEVELOP, "Call AW[" .. mthod .. "](AW, ...) From Event " .. event .. " IsEnabled " .. tostring(AW.IsEnabled));
-        AW[mthod](AW, event, ...)
+        AW[mthod](AW, event, ...);
         --self:Debug(DEBUG_DEVELOP, "Called");
 
     end)
@@ -141,7 +154,7 @@ function AW:UpdateMembersInfo(...)
     local allMembers = {}
     local playerName = UnitName("Player");
 
-    AW.PlayerProfile = AWProfile:GetProfileUpdate();
+    AW.PlayerProfile = AWProfile:GetProfileUpdated();
     warlocks[playerName] = { Unit = "Player", UnitName = playerName, Order = 0, Profile = AW.PlayerProfile };
 
     if (UnitInRaid("Player")) then
@@ -189,19 +202,12 @@ end
 function AW:SendProfileUpdate()
     local playerName = UnitName("PLAYER");
     if (AW.Warlocks ~= nil and AW.Warlocks[playerName] ~= nil) then
-        local userData = AWProfile:GetCurrent()
+        local userData = AWProfile:GetProfileUpdated()
         local userDataStr = AWSerializer:Serialize(userData)
         
         AW.Warlocks[playerName].Profile = userData;
 
-        local target = "";
-        if (UnitInRaid("Player")) then
-            target = "RAID";
-        elseif (UnitInParty("Player")) then
-            target = "PARTY"
-        end
-
-        AW:SendCommMessage("AWSYNC", userDataStr, target);
+        AW:SendCommMessage("AWSYNC", userDataStr, _getComTarget());
     end
 end
 
@@ -310,6 +316,14 @@ function AW:OnUpdate(elapsed)
 end
 
 --[[
+    Called when the bag is update
+]]
+function AW:WhenBagUpdate(eventName, ...) 
+    AW:SendProfileUpdate();
+    AW:UpdateMembersInfo();
+end
+
+--[[
     Called each time a spell action if done
 ]]
 function AW:PlayerApplySpell(eventName, unit, castGUID, spellID)
@@ -391,14 +405,40 @@ function AW:SetAssignationTarget(targetIndex, unitName)
     else
 
         local serializedData = AWSerializer:Serialize({ ["UnitName"] = unitName, ["TargetIndex"] = targetIndex });
-        local target = "";
-        if (UnitInRaid("Player")) then
-            target = "RAID";
-        elseif (UnitInParty("Player")) then
-            target = "PARTY"
-        end
+        AW:SendCommMessage("AWASSIGN-TGT", serializedData, _getComTarget());
+    end
+end
 
-        AW:SendCommMessage("AWASSIGN-TGT", serializedData, target);
+--[[
+    Set the assignation target
+]]
+function AW:SetCurseAssignationTargetCallback(prefix, message, msgType, sender)
+
+    if (message == nil) then
+        return
+    end
+
+    local serializedData = AWSerializer:Deserialize(message);
+    
+    if (serializedData ~= nil and serializedData.UnitName ~= nil and serializedData.UnitName == UnitName("Player")) then
+        AW:SetCurseAssignationTarget(serializedData.SpellId, serializedData.UnitName);
+    end
+end
+
+--[[
+    Set curse the assignation target
+]]
+function AW:SetCurseAssignationTarget(spellId, unitName)
+    if (unitName == UnitName("Player")) then
+        AWProfile:SetCurseAssignationTarget(spellId);
+        AW:Debug("ASSIGN CURSE " .. tostring(spellId) .. " to " .. unitName);
+
+        AW:SendProfileUpdate();
+        AW:UpdateMembersInfo();
+    else
+
+        local serializedData = AWSerializer:Serialize({ ["UnitName"] = unitName, ["SpellId"] = spellId });
+        AW:SendCommMessage("AWASSIGN-TCU", serializedData, _getComTarget());
     end
 end
 
@@ -406,7 +446,6 @@ end
     Clear the current target assignation
 ]]
 function AW:ClearAssignationTargetCallback()
-
     AWProfile:SetAssignationTarget();
     AW:SendProfileUpdate();
     AW:UpdateMembersInfo();
@@ -417,15 +456,7 @@ end
 ]]
 function AW:ClearAssignationTarget()
 
-    local target = "";
-    if (UnitInRaid("Player")) then
-        target = "RAID";
-    elseif (UnitInParty("Player")) then
-        target = "PARTY"
-    end
-
-    AW:SendCommMessage("AWASSIGN-TGT-CLR", "", target);
-
+    AW:SendCommMessage("AWASSIGN-TGT-CLR", "", _getComTarget());
     AW:ClearAssignationTargetCallback();
 end
 
@@ -437,9 +468,10 @@ function AW:OnEnable()
     AW.IsEnabled = englishClass:lower() == "warlock";
     self:Debug(DEBUG_DEVELOP, "OnEnable englishClass: '" .. englishClass .. "'".. tostring(AW.IsEnabled) .. "'");
 
-    if (UnitInParty("Player") or UnitInRaid("Player")) then
-        AW.UpdateMembersInfo();
-    end
+    AW:SendProfileUpdate();
+    AW:UpdateMembersInfo();
+
+    AW:SendCommMessage("AWSYNC-ASK", "", _getComTarget());
 end
 
 function AW:OnDisable()
