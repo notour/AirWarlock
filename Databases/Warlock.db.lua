@@ -145,3 +145,112 @@ AWWarlockDB.SoulFragmentSpell = {
     tonumber(22699),	
     tonumber(24670),
 };
+
+AWWarlockDB.Curses = {
+    ["Weakness"] = {
+        ["Icon"] = "warlock_curse_weakness",
+        ["Spells"] = {
+            702,
+            729,
+            1031,
+            1108,
+            1109,
+            1393,
+            1394,
+            6205,
+            6206,
+            7646,
+            7647,
+            8552,
+            11707,
+            11708,
+            11709,
+            11710,
+            11980,
+            12493,
+            12741,
+            17227,
+            18267,
+            21007,
+        }
+    },
+    ["Agony"] = {
+        ["Icon"] = "spell_shadow_curseofsargeras",
+        ["Spells"] = {
+            980,
+            981,
+            1014,
+            1015,
+            1029,
+            1296,
+            1297,
+            6217,
+            6218,
+            11711,
+            11712,
+            11713,
+            11714,
+            11715,
+            11716,
+            14868,
+            14875,
+            17771,
+            18266,
+            18671,
+        }
+    },
+    ["Recklessness "] = {
+        ["Icon"] = "spell_shadow_unholystrength",
+        ["Spells"] = {
+            704,
+            7650,
+            7658,
+            7659,
+            7660,
+            7661,
+            11717,
+            11718,
+            16231,
+        }
+    },
+    ["Tongues"] = {
+        ["Icon"] = "spell_shadow_curseoftounges",
+        ["Spells"] = {
+            956,
+            1714,
+            5736,
+            11719,
+            11720,
+            12889,
+            13338,
+            15470,
+            25195,
+        }
+    },
+    ["Elements"] = {
+        ["Icon"] = "spell_shadow_chilltouch",
+        ["Spells"] = {
+            1490,
+            7666,
+            11721,
+            11722,
+            11723,
+            11724,
+        }
+    },
+    ["Exhaustion"] = {
+        ["Icon"] = "spell_shadow_grimward",
+        ["Spells"] = {
+            18223
+        }
+    },
+    ["Shadow"] = {
+        ["Icon"] = "spell_shadow_curseofachimonde",
+        ["Spells"] = {
+            17862,
+            17865,
+            17937,
+            17938,
+        }
+    }
+}

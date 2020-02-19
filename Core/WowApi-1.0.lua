@@ -6,6 +6,13 @@ local WowApiHelper, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not WowApiHelper then return end
 
+WowApiHelper.Const = {
+    ["CostType"] = {
+        Mana = 0,
+        SoulShards = 7
+    }
+}
+
 --[[
     Count in the bag the numer of availabled items
 ]]
@@ -27,4 +34,17 @@ function WowApiHelper:GetItemCount(itemId)
         end
     end
     return itemCount
+end
+
+--[[
+    Gets the specific cost of a spell
+]]
+function WowApiHelper:GetSpellCostByType(spellId, costType)
+    local cost = GetSpellPowerCost(spellId);
+    for indx, data in pairs(cost) do
+        if (data.type == costType) then
+            return data.cost;
+        end
+    end
+    return nil;
 end
