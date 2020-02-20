@@ -101,7 +101,7 @@ function AW:OnInitialize()
     AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
     self:RegisterChatCommand("AW", "SlashCommands")
     self:RegisterComm("AWSYNC", "UpdateWarlockData");
-    self:RegisterComm("AWSYNC-ASK", "SendProfileUpdate");
+    self:RegisterComm("AWSYNC-ASK", "SendProfileUpdateCallback");
     self:RegisterComm("AWASSIGN-TGT", "SetAssignationTargetCallback");
     self:RegisterComm("AWASSIGN-TGT-CLR", "ClearAssignationTargetCallback");
 
@@ -194,6 +194,20 @@ function AW:UpdateMembersInfo(...)
     end
 
     AWWarlockView:UpdateAll(warlocks);
+end
+
+--[[
+    Update to local user information to the user members
+]]
+function AW:SendProfileUpdateCallback(prefix, message, msgType, sender)
+    local unitName, server = UnitFullName("Player");
+    if (prefix ~= "AWSYNC-ASK" or sender == unitName or sender == unitName .. "-" .. server) then
+        AW:Error("Block recursive msg SendProfileUpdateCallback");
+        return;
+    end
+
+    AW:SendProfileUpdate();
+    AW:Error("SendProfileUpdate");
 end
 
 --[[
