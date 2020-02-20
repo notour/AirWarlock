@@ -33,6 +33,13 @@ function AWModuleLoader:CreateModule(name)
 end
 
 ---@param name string @Module name
+---@param moduleInst @Module to register
+---@return Module @Module reference
+function AWModuleLoader:SetupModule(name, moduleInst)
+  modules[name] = moduleInst
+end
+
+---@param name string @Module name
 ---@return Module @Module reference
 function AWModuleLoader:ImportModule(name)
   if (not modules[name]) then

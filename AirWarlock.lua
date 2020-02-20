@@ -66,19 +66,22 @@ local Events = {
 
 AW = {...}
 
--- @load AWOptionDefaults
+-- @class AWOptionDefaults
 local AWOptionDefaults = AWModuleLoader:ImportModule("AWOptionDefaults");
 
--- @load AWProfile
+-- @class AWProfile
 local AWProfile = AWModuleLoader:ImportModule("AWProfile");
 
--- @load AWSerializer
+-- @class AWSerializer
 local AWSerializer = AWModuleLoader:ImportModule("AWSerializer");
 
--- @load AWWarlockView
+-- @class AWWarlockView
 local AWWarlockView = AWModuleLoader:ImportModule("AWWarlockView");
 
-AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
+--- @class AWAceCommModule
+local AWAceCommModule = AWModuleLoader:ImportModule("AWAceCommModule");
+
+AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
 _AW = {...}
 
 
@@ -100,10 +103,14 @@ function AW:OnInitialize()
 
     AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
     self:RegisterChatCommand("AW", "SlashCommands")
-    self:RegisterComm("AWSYNC", "UpdateWarlockData");
-    self:RegisterComm("AWSYNC-ASK", "SendProfileUpdateCallback");
-    self:RegisterComm("AWASSIGN-TGT", "SetAssignationTargetCallback");
-    self:RegisterComm("AWASSIGN-TGT-CLR", "ClearAssignationTargetCallback");
+
+    AWAceCommModule:Initialize(AW, "AWSYNC");
+    
+    -- self:RegisisterComm("AWSYNC", "SafeCommMessageHandler");
+    -- self:RegisterComm("AWSYNC", "UpdateWarlockData");
+    -- self:RegisterComm("AWSYNC-ASK", "SendProfileUpdateCallback");
+    -- self:RegisterComm("AWASSIGN-TGT", "SetAssignationTargetCallback");
+    -- self:RegisterComm("AWASSIGN-TGT-CLR", "ClearAssignationTargetCallback");
 
     local frame = CreateFrame("Frame")
     frame:SetScript("OnUpdate", AW.OnUpdate)
@@ -134,6 +141,8 @@ function AW:OnInitialize()
     AW.PlayerName = UnitName("Player");
     --self:Debug(DEBUG_DEVELOP, "-- AirWarlock addon loaded")
 end
+
+
 
 --[[
     Called to save the current config
