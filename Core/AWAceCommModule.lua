@@ -1,5 +1,8 @@
 ---@type Module AWAceCommModule
-local AWAceCommModule = LibStub("AceComm-3.0");
+local _comLib = LibStub:GetLibrary("AceComm-3.0");
+local AWAceCommModule = {}
+_comLib:Embed(AWAceCommModule);
+
 AWModuleLoader:SetupModule("AWAceCommModule", AWAceCommModule);
 
 -- @class AWSerializer
@@ -12,7 +15,8 @@ function AWAceCommModule:Initialize(addon, commRoot)
     self._addon = addon;
     self._commRoot = commRoot;
     self._callbacks = {};
-    self:RegisisterComm(commRoot, "SafeCommMessageHandler");
+    --self:RegisterComm(commRoot, function(...) AWAceCommModule:_SafeCommMessageHandler(...); end);
+    self:RegisterComm(commRoot, function (prefix, message, msgType, sender) AW:Debug(DEBUG_INFO, prefix .." MESSAGE RECEIVED " .. sender) end);
 end
 
 --- Send the data pass in argument to the other members that shared this addon
@@ -31,6 +35,7 @@ function AWAceCommModule:SendMessageToMember(subeventType, data)
 
     local message = _serializer:Serialize(container);
 
+    AW:Debug(DEBUG_INFO, "SendCommMessage(" .. self._commRoot .. ", " .. subeventType .. ", " .. target .. ");");
     self:SendCommMessage(self._commRoot, message, target);
 end
 
@@ -41,7 +46,7 @@ function AWAceCommModule:RegisterEventCallback(subtype, callbackMethodName)
     self._callbacks[subtype] = callbackMethodName;
 
     if (self._addon[callbackMethodName] ~= nil) then
-        self._addon:Error("Callback " .. callbackMethodName .. " doesn't exists on the addon");
+        AW:Error("Callback " .. callbackMethodName .. " doesn't exists on the addon");
     end
 end
 
@@ -52,13 +57,13 @@ end
 ---@param sender string full player name that send the message
 function AWAceCommModule:_SafeCommMessageHandler(prefix, message, msgType, sender)
 
+    AW:Debug("AWModuleLoader _SafeCommMessageHandler " .. prefix .. " message" .. message);
     local unitName, server = UnitFullName("Player");
     if (prefix ~= self._commRoot or sender == unitName or sender == unitName .. "-" .. server) then
-        self._addon:Debug("Prevent loop back");
+        AW:Debug("Prevent loop back");
         return;
     end
 
     local container = _serializer:Deserialize(message);
 
-    self.Addon:Debug("AWModuleLoader prefix " .. prefix);
 end

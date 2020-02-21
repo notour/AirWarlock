@@ -92,6 +92,7 @@ local _getComTarget = function()
     return "PARTY";
 end
 
+--- Called at the addon initialization
 function AW:OnInitialize()
 
     local defaultConfig = AWOptionDefaults:Load();
@@ -105,7 +106,10 @@ function AW:OnInitialize()
     self:RegisterChatCommand("AW", "SlashCommands")
 
     AWAceCommModule:Initialize(AW, "AWSYNC");
-    
+    AWAceCommModule:RegisterEventCallback("TARGET", "SetAssignationTargetCallback");
+    AWAceCommModule:RegisterEventCallback("UPDATE", "UpdateWarlockData");
+    AWAceCommModule:RegisterEventCallback("ASK", "SendProfileUpdateCallback");
+
     -- self:RegisisterComm("AWSYNC", "SafeCommMessageHandler");
     -- self:RegisterComm("AWSYNC", "UpdateWarlockData");
     -- self:RegisterComm("AWSYNC-ASK", "SendProfileUpdateCallback");
@@ -226,11 +230,8 @@ function AW:SendProfileUpdate()
     local playerName = UnitName("PLAYER");
     if (AW.Warlocks ~= nil and AW.Warlocks[playerName] ~= nil) then
         local userData = AWProfile:GetProfileUpdated()
-        local userDataStr = AWSerializer:Serialize(userData)
-        
         AW.Warlocks[playerName].Profile = userData;
-
-        AW:SendCommMessage("AWSYNC", userDataStr, _getComTarget());
+        AWAceCommModule:SendMessageToMember("UPDATE", userData);
     end
 end
 
@@ -275,7 +276,7 @@ function AW:SlashCommands(args)
 
     local arg1, arg2, arg3 = self:GetArgs(args, 3)
     
-    if (InDebugMode) then
+    if (InDebugMode and arg1 ~= nil) then
 
         if (args ~= nil and arg1:lower() == "current") then
 
@@ -291,7 +292,7 @@ function AW:SlashCommands(args)
 
         if (args ~= nil and arg1:lower() == "update") then
             AW:SendProfileUpdate();
-            AW.UpdateMembersInfo();
+            AW:UpdateMembersInfo();
         end
 
         if (args ~= nil and arg1:lower() == "reset") then
@@ -300,7 +301,7 @@ function AW:SlashCommands(args)
         end
 
         if (args ~= nil and arg1:lower() == "show") then
-            AW.UpdateMembersInfo();
+            AW:UpdateMembersInfo();
             AWWarlockView:Show();
         end
 
@@ -401,17 +402,14 @@ end
 --[[
     Set the assignation target
 ]]
-function AW:SetAssignationTargetCallback(prefix, message, msgType, sender)
+function AW:SetAssignationTargetCallback(data)
 
-    if (message == nil) then
+    if (data == nil) then
         return
     end
-
-    -- sender ~= UnitName("Player")
-    local serializedData = AWSerializer:Deserialize(message);
     
-    if (serializedData ~= nil and serializedData.UnitName ~= nil and serializedData.UnitName == UnitName("Player")) then
-        AW:SetAssignationTarget(serializedData.TargetIndex, serializedData.UnitName);
+    if (data.UnitName ~= nil and data.UnitName == UnitName("Player")) then
+        AW:SetAssignationTarget(data.TargetIndex, data.UnitName);
     end
 end
 
@@ -427,8 +425,9 @@ function AW:SetAssignationTarget(targetIndex, unitName)
         AW:UpdateMembersInfo();
     else
 
-        local serializedData = AWSerializer:Serialize({ ["UnitName"] = unitName, ["TargetIndex"] = targetIndex });
-        AW:SendCommMessage("AWASSIGN-TGT", serializedData, _getComTarget());
+        --local serializedData = AWSerializer:Serialize({ ["UnitName"] = unitName, ["TargetIndex"] = targetIndex });
+        --AW:SendCommMessage("AWASSIGN-TGT", serializedData, _getComTarget());
+        AWAceCommModule:SendMessageToMember("TARGET", { ["UnitName"] = unitName, ["TargetIndex"] = targetIndex });
     end
 end
 
@@ -494,7 +493,7 @@ function AW:OnEnable()
     AW:SendProfileUpdate();
     AW:UpdateMembersInfo();
 
-    AW:SendCommMessage("AWSYNC-ASK", "", _getComTarget());
+    AWAceCommModule:SendMessageToMember("ASK");
 end
 
 function AW:OnDisable()

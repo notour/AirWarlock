@@ -21,6 +21,8 @@ Core\WowUIApi-1.0.lua
 Core\AWSerializer.lua
 Core\AWOptionsDefault.lua
 
+Core\AWAceCommModule.lua
+
 Views\AWWarlockView.lua
 
 # Profiles
