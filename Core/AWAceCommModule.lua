@@ -33,6 +33,7 @@ function AWAceCommModule:SendMessageToMember(subeventType, data)
     end
 
     local message = _serializer:Serialize(container);
+    AW:Debug(DEBUG_SPAM, "SendMessageToMember " .. tostring(container.SubEvent) .. " " .. message);
     self:SendCommMessage(self._commRoot, message, target);
 end
 
@@ -60,6 +61,7 @@ function AWAceCommModule:_SafeCommMessageHandler(prefix, message, msgType, sende
     end
 
     local container = _serializer:Deserialize(message);
+    AW:Debug(DEBUG_SPAM, "_SafeCommMessageHandler " .. tostring(container.SubEvent) .. " " .. message);
 
     if (container.SubEvent ~= nil and self._callbacks[container.SubEvent] ~= nil) then
         self._addon[self._callbacks[container.SubEvent]](self._addon, container.SubEvent, container.Data);

@@ -230,7 +230,7 @@ function AW:_updateWarlockMainView()
                 warlockProfile.IsConnected = UnitIsConnected(warlockProfile.MemberId);
                 table.insert(warlocks, warlockProfile);
 
-                AW:Debug(DEBUG_INFO, "_updateWarlockMainView " .. table.getn(warlocks) ..  " UnitName " .. unitName .. " isConnected " .. tostring(warlockProfile.IsConnected) .. " IsCurrentPlayer " .. tostring(warlockProfile.IsCurrentPlayer));
+                --AW:Debug(DEBUG_INFO, "_updateWarlockMainView " .. table.getn(warlocks) ..  " UnitName " .. unitName .. " isConnected " .. tostring(warlockProfile.IsConnected) .. " IsCurrentPlayer " .. tostring(warlockProfile.IsCurrentPlayer));
             end
         end
     end
@@ -247,18 +247,15 @@ end
 
 ---Send a profil update to the other Addon member
 function AW:SendProfileUpdate()
-    local playerName = UnitName("PLAYER");
-    if (AW.Warlocks ~= nil and AW.Warlocks[playerName] ~= nil) then
-        local userData = AWProfile:GetProfileUpdated()
-        AW.Warlocks[playerName] = userData;
-        AWAceCommModule:SendMessageToMember("UPDATE", userData);
-    end
+    AWAceCommModule:SendMessageToMember("UPDATE", AWProfile:GetProfileUpdated());
 end
 
 --- Called after an "UPDATE" sub event to update the local information on a specific warlock member
 ---@param subEvent string sub event name
 ---@param profile table warlock member profile info
 function AW:UpdateWarlockData(subEvent, profile)
+
+    AW:Debug(DEBUG_INFO, "UpdateWarlockData " .. tostring(subEvent) .. " profile " .. tostring(profile));
 
     AW:UpdateMembersInfo();
 

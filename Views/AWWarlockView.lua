@@ -364,12 +364,12 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     for id, data in ipairs(warlocks) do
         previsouHost = _updateWarlockInfo(data, previsouHost);
         hostUsed[data.UnitName] = previsouHost;
-        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id);
+        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id);
     end
 
     for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
         if (hostUsed[key] == nil) then
-            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
+            --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
             AWWarlockViewModule.FramePool:Recycle(frame);
         end
     end
