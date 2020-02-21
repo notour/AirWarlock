@@ -420,7 +420,7 @@ function AW:SetCurseAssignationTarget(spellId, unitName)
         AW:SendProfileUpdate();
         AW:UpdateMembersInfo();
     else
-        AW:SendCommMessage("CURSE", { ["UnitName"] = unitName, ["SpellId"] = spellId });
+        AWAceCommModule:SendMessageToMember("CURSE", { ["UnitName"] = unitName, ["SpellId"] = spellId });
     end
 end
 
@@ -435,7 +435,7 @@ end
 
 --- Raised the "TARGETCLR" sub event
 function AW:ClearAssignationTarget()
-    AW:SendCommMessage("TARGETCLR");
+    AWAceCommModule:SendMessageToMember("TARGETCLR");
     AW:ClearAssignationTargetCallback();
 end
 
