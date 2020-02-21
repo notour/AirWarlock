@@ -23,31 +23,41 @@ local raidTargetInfo = {
     [8] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_8", Name = AWL:L("Skull") },
 }
 
---[[
-    Setup the player info into the provided frame
-]]
+---[private] Setup the player info into the provided frame
+---@param frame table host frame of the player info
+---@param data table warlock information
+---@param root table root frame that host the frames
 local _setupPlayerInfo = function(frame, data, root)
+    if (data == nil) then
+        return;
+    end
+
+    local profile = data.Profile;
+    if (profile == nil) then
+        return;
+    end
+
     frame:SetPoint("TOPLEFT", root.PlayerInfoHost);
     frame:SetPoint("BOTTOMRIGHT", root.PlayerInfoHost);
 
-    if (data.Profile.IsOnline) then
+    if (profile.IsOnline) then
         frame.PlayerName:SetFontObject("GameFontHighlightSmall");
     else
         frame.PlayerName:SetFontObject("GameFontDisable");
     end
 
     frame.PlayerName:SetText(data.UnitName);
-    frame.ShardNumber:SetText(data.Profile.NBSoulFragment);
+    frame.ShardNumber:SetText(profile.NBSoulFragment);
 
-    if (data.Profile.AssignRaidTarget ~= nil) then
-        frame.assignTargetIco:SetTexture(raidTargetInfo[data.Profile.AssignRaidTarget].Icon);
+    if (profile.AssignRaidTarget ~= nil) then
+        frame.assignTargetIco:SetTexture(raidTargetInfo[profile.AssignRaidTarget].Icon);
         frame.assignTargetIco:Show();
     else
         frame.assignTargetIco:Hide();
     end
 
-    if (data.Profile.AssignCurse ~= nil) then
-        local name, _, icon = GetSpellInfo(data.Profile.AssignCurse);
+    if (profile.AssignCurse ~= nil) then
+        local name, _, icon = GetSpellInfo(profile.AssignCurse);
         frame.assignCurseIco:SetNormalTexture(icon);
         frame.assignCurseIco:SetScript("OnEnter", function()
             GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_MOUSE", 0, -50);
@@ -69,12 +79,23 @@ local _setupPlayerInfo = function(frame, data, root)
     return root.PlayerInfoHost;
 end
 
---[[
-    Setup the ban info into the provided frame
-]]
+---[private] Setup the banish player info into the provided frame
+---@param frame table host frame of the player info
+---@param parentHost table previous host frame to be position in relative with
+---@param data table warlock information
+---@param root table root frame that host the frames
 local _setupBanInfo = function(frame, parentHost, data, root) 
 
-    if (data.Profile.Banish) then
+    if (data == nil) then
+        return;
+    end
+
+    local profile = data.Profile;
+    if (profile == nil) then
+        return;
+    end
+
+    if (profile.Banish) then
 
         local templateHeight = root.BanInfoHost:GetHeight();
         root.BanInfoHost:ClearAllPoints();
@@ -86,17 +107,17 @@ local _setupBanInfo = function(frame, parentHost, data, root)
         frame:SetPoint("TOPLEFT", root.BanInfoHost);
         frame:SetPoint("BOTTOMRIGHT", root.BanInfoHost);
 
-        frame.BanTargetName:SetText(data.Profile.Banish.TargetName);
+        frame.BanTargetName:SetText(profile.Banish.TargetName);
 
         local now = GetServerTime();
-        if (data.Profile.Banish.Timeout and data.Profile.Banish.Timeout > now)  then
-            frame.BanTimerSecondInfo:SetText(data.Profile.Banish.Timeout - now);
+        if (profile.Banish.Timeout and profile.Banish.Timeout > now)  then
+            frame.BanTimerSecondInfo:SetText(profile.Banish.Timeout - now);
         else
             frame.BanTimerSecondInfo:SetText("");
         end
 
-        if (data.Profile.Banish.TargetIcon ~= nil) then
-            frame.BanTimerTargetIconInfo:SetTexture(raidTargetInfo[data.Profile.Banish.TargetIcon].Icon);
+        if (profile.Banish.TargetIcon ~= nil) then
+            frame.BanTimerTargetIconInfo:SetTexture(raidTargetInfo[profile.Banish.TargetIcon].Icon);
         else
             frame.BanTimerTargetIconInfo:SetTexture("");
         end
@@ -109,9 +130,19 @@ local _setupBanInfo = function(frame, parentHost, data, root)
     return parentHost;
 end
 
+--- [private] Setup the assign menu (target, curse, ...)
+---@param frame table host frame
+---@param data table warlock profile data
 local _setupAssignMenu = function(frame, data)
     
-    AW:Debug("_setupAssignMenu");
+    if (data == nil) then
+        return;
+    end
+
+    local profile = data.Profile;
+    if (profile == nil) then
+        return;
+    end
 
     frame:SetScript("OnMouseUp", function(self, buttonUse, ...)
 
@@ -120,18 +151,8 @@ local _setupAssignMenu = function(frame, data)
         end
 
         local assignMenu = {
-                { text = AWL:L("Assign"), isTitle = true},
-                -- { text = "Cible", hasArrow = true,
-                --     menuList = {
-                --         { text = "square", func = function() AW:Debug("You've chosen option 3"); end }
-                --     } 
-                -- },
-                -- { text = "Malédiction", hasArrow = true,
-                --     menuList = {
-                --         { text = "Element", func = function() AW:Debug("You've chosen option 3"); end }
-                --     } 
-                -- }
-            }
+            { text = AWL:L("Assign"), isTitle = true}
+        };
 
         local targets = { };
 
@@ -149,7 +170,7 @@ local _setupAssignMenu = function(frame, data)
 
         table.insert(assignMenu, { text = AWL:L("Target"), hasArrow = true, menuList = targets });
 
-        if (data.Profile.AvailableCurses ~= nil) then
+        if (profile.AvailableCurses ~= nil) then
             local curses = {};
 
             table.insert(curses, { text = AWL:L("Clear Curse"), icon = icon, arg1 = data.UnitName, func = function(_, unitName, spellId)
@@ -157,7 +178,7 @@ local _setupAssignMenu = function(frame, data)
                 frame.ContextMenu:Hide();
             end })
 
-            for indx, curseSpellCast in pairs(data.Profile.AvailableCurses) do
+            for indx, curseSpellCast in pairs(profile.AvailableCurses) do
                 local name, _, icon = GetSpellInfo(curseSpellCast)
                 table.insert(curses, { text = name, icon = icon, arg1 = data.UnitName, arg2 = curseSpellCast, func = function(_, unitName, spellId)
                     AW:SetCurseAssignationTarget(spellId, unitName);
@@ -180,6 +201,72 @@ local _setupAssignMenu = function(frame, data)
     end);
 end
 
+--- update information view of the warlock pass in argument
+---@param data table warlock data
+---@param parentHostFrame table previous related frame
+local _updateWarlockInfo = function(data, parentHostFrame)
+    --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "UpdateWarlockInfo : " .. data.Order .. " " .. data.UnitName);
+
+    local currentHostFrame = AWWarlockViewModule.PlayerFrames[data.UnitName];
+
+    local parent = AWWarlockViewModule.Content;
+    local firstElem = true;
+    if (parentHostFrame ~= nil) then
+        parent = parentHostFrame;
+        firstElem = false;
+    end
+
+    if (currentHostFrame == nil) then
+        currentHostFrame = AWWarlockViewModule.FramePool:Pop();
+
+        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Create new currentHostFrame");
+
+        AWWarlockViewModule.PlayerFrames[data.UnitName] = currentHostFrame;
+        currentHostFrame:SetSize(100, 50);
+
+        currentHostFrame.bg = currentHostFrame:CreateTexture(nil, "BACKGROUND");
+        currentHostFrame.bg:SetAllPoints(true);
+        currentHostFrame.bg:SetColorTexture(0.5, 0.5, 0.5, 0.2);
+
+        currentHostFrame.Name = data.UnitName;
+
+        currentHostFrame.PlayerInfo:SetScript("OnLoad", _setupAssignMenu);
+        _setupAssignMenu(currentHostFrame.PlayerInfo, data);
+    end
+
+    currentHostFrame:ClearAllPoints(true);
+    
+    if (firstElem) then
+        currentHostFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0);
+        currentHostFrame:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, 0);
+    else
+        currentHostFrame:SetPoint("TOPLEFT", parent, "BOTTOMLEFT", 0, -10);
+        currentHostFrame:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", 0, -10);
+        
+        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, parent.Name .. " <- ".. data.UnitName);
+    end
+
+    local hostUsed = {};
+    local lastHostItem = _setupPlayerInfo(currentHostFrame.PlayerInfo, data, currentHostFrame);
+    hostUsed[tostring(lastHostItem)] = lastHostItem;
+
+    lastHostItem = _setupBanInfo(currentHostFrame.BanInfo, lastHostItem, data, currentHostFrame);
+    hostUsed[tostring(lastHostItem)] = lastHostItem;
+
+    local totalHeight = 0;
+    for indx, item in pairs(hostUsed) do
+        if (item ~= nil) then
+            totalHeight = totalHeight + item:GetHeight();
+        end
+    end
+
+    currentHostFrame:SetSize(100, totalHeight);
+
+    return currentHostFrame;
+end
+
+--- Initialize the main window
+---@param AWModule Module addon module
 function AWWarlockViewModule:Initialize(AWModule)
     if (AWWarlockViewModule.Frame) then
         return;
@@ -246,25 +333,20 @@ function AWWarlockViewModule:Initialize(AWModule)
     UIFrame:Hide();
 end
 
---[[
-    Called to reset the view parameters
-]]
+--- Reset saved parameter to default one
 function AWWarlockViewModule:Reset()
     AWWarlockViewModule.Frame:ClearAllPoints();
     AWWarlockViewModule.Frame:SetSize(350, 400);
     AWWarlockViewModule.Frame:SetPoint("CENTER");
 end
 
---[[
-    Called to refresh the view size information
-]]
+--- Called to update the current view size
 function AWWarlockViewModule:UpdateViewSizes()
     AWWarlockViewModule.Content:SetSize(UIFrame.ScrollFrame:GetWidth() - 25, UIFrame.ScrollFrame:GetHeight() - 25);
 end
 
---[[
-    Update the view by all the warlocks information
-]]
+---Update the view by all the warlocks information
+---@param warlocks table[] warlocks data info
 function AWWarlockViewModule:UpdateAll(warlocks)
     local sortWarlocks = {};
     for name, data in pairs(warlocks) do
@@ -274,7 +356,7 @@ function AWWarlockViewModule:UpdateAll(warlocks)
 
     local previsouHost = nil;
     for id, data in ipairs(sortWarlocks) do
-        previsouHost = AWWarlockViewModule:UpdateWarlockInfo(data, previsouHost);
+        previsouHost = _updateWarlockInfo(data, previsouHost);
     end
 
     for key, data in pairs(AWWarlockViewModule.PlayerFrames) do
@@ -286,70 +368,7 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     end
 end
 
---[[
-    Update the view warlock info
-]]
-function AWWarlockViewModule:UpdateWarlockInfo(data, parentHostFrame)
-    AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "UpdateWarlockInfo : " .. data.Order .. " " .. data.UnitName);
-
-    local currentHostFrame = AWWarlockViewModule.PlayerFrames[data.UnitName];
-
-    local parent = AWWarlockViewModule.Content;
-    local firstElem = true;
-    if (parentHostFrame ~= nil) then
-        parent = parentHostFrame;
-        firstElem = false;
-    end
-
-    if (currentHostFrame == nil) then
-        currentHostFrame = AWWarlockViewModule.FramePool:Pop();
-
-        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Create new currentHostFrame");
-
-        AWWarlockViewModule.PlayerFrames[data.UnitName] = currentHostFrame;
-        currentHostFrame:SetSize(100, 50);
-
-        currentHostFrame.bg = currentHostFrame:CreateTexture(nil, "BACKGROUND");
-        currentHostFrame.bg:SetAllPoints(true);
-        currentHostFrame.bg:SetColorTexture(0.5, 0.5, 0.5, 0.2);
-
-        currentHostFrame.Name = data.UnitName;
-
-        currentHostFrame.PlayerInfo:SetScript("OnLoad", _setupAssignMenu);
-        _setupAssignMenu(currentHostFrame.PlayerInfo, data);
-    end
-
-    currentHostFrame:ClearAllPoints(true);
-    
-    if (firstElem) then
-        currentHostFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0);
-        currentHostFrame:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, 0);
-    else
-        currentHostFrame:SetPoint("TOPLEFT", parent, "BOTTOMLEFT", 0, -10);
-        currentHostFrame:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", 0, -10);
-        
-        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, parent.Name .. " <- ".. data.UnitName);
-    end
-
-    local hostUsed = {};
-    local lastHostItem = _setupPlayerInfo(currentHostFrame.PlayerInfo, data, currentHostFrame);
-    hostUsed[tostring(lastHostItem)] = lastHostItem;
-
-    lastHostItem = _setupBanInfo(currentHostFrame.BanInfo, lastHostItem, data, currentHostFrame);
-    hostUsed[tostring(lastHostItem)] = lastHostItem;
-
-    local totalHeight = 0;
-    for indx, item in pairs(hostUsed) do
-        if (item ~= nil) then
-            totalHeight = totalHeight + item:GetHeight();
-        end
-    end
-
-    currentHostFrame:SetSize(100, totalHeight);
-
-    return currentHostFrame;
-end
-
+--- Hide the main view
 function AWWarlockViewModule:Hide()
     if (AWWarlockViewModule.Frame == nil) then
         return;
@@ -357,6 +376,7 @@ function AWWarlockViewModule:Hide()
     AWWarlockViewModule.Frame:Hide()
 end
 
+--- @return boolean true if the main view is visible
 function AWWarlockViewModule:IsVisible()
     if (AWWarlockViewModule.Frame == nil) then
         return false;
@@ -364,6 +384,7 @@ function AWWarlockViewModule:IsVisible()
     return AWWarlockViewModule.Frame:IsVisible();
 end
 
+--- Show the main view
 function AWWarlockViewModule:Show()
     if (AWWarlockViewModule.Frame == nil) then
         return;

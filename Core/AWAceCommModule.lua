@@ -15,8 +15,7 @@ function AWAceCommModule:Initialize(addon, commRoot)
     self._addon = addon;
     self._commRoot = commRoot;
     self._callbacks = {};
-    --self:RegisterComm(commRoot, function(...) AWAceCommModule:_SafeCommMessageHandler(...); end);
-    self:RegisterComm(commRoot, function (prefix, message, msgType, sender) AW:Debug(DEBUG_INFO, prefix .." MESSAGE RECEIVED " .. sender) end);
+    self:RegisterComm(commRoot, function(...) AWAceCommModule:_SafeCommMessageHandler(...); end);
 end
 
 --- Send the data pass in argument to the other members that shared this addon
@@ -34,8 +33,6 @@ function AWAceCommModule:SendMessageToMember(subeventType, data)
     end
 
     local message = _serializer:Serialize(container);
-
-    AW:Debug(DEBUG_INFO, "SendCommMessage(" .. self._commRoot .. ", " .. subeventType .. ", " .. target .. ");");
     self:SendCommMessage(self._commRoot, message, target);
 end
 
@@ -57,13 +54,14 @@ end
 ---@param sender string full player name that send the message
 function AWAceCommModule:_SafeCommMessageHandler(prefix, message, msgType, sender)
 
-    AW:Debug("AWModuleLoader _SafeCommMessageHandler " .. prefix .. " message" .. message);
     local unitName, server = UnitFullName("Player");
     if (prefix ~= self._commRoot or sender == unitName or sender == unitName .. "-" .. server) then
-        AW:Debug("Prevent loop back");
         return;
     end
 
     local container = _serializer:Deserialize(message);
 
+    if (container.SubEvent ~= nil and self._callbacks[container.SubEvent] ~= nil) then
+        self._addon[self._callbacks[container.SubEvent]](self._addon, container.SubEvent, container.Data);
+    end
 end
