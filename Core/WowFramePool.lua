@@ -1,42 +1,37 @@
 local WowFramePool = AWModuleLoader:CreateModule("WowFramePool");
 
-local AceSerializer = LibStub("AceSerializer-3.0");
-
---[[
-    Pop an item from the pool if exist or create a new one
-]]
+--- Pop an item from the pool if exist or create a new one
 local _pop = function(self)
-
     if (table.getn(self.frames) == 0) then
-        return CreateFrame("Frame", nil, self["frameParent"], self["frameTemplate"]);
+        return CreateFrame("Frame", nil, self.frameParent, self.frameTemplate);
     end
 
-    local last = frames[self.tail];
-    table.remove(frames, self.tail);
+    local first = self.frames[1];
+    table.remove(self.frames, 1);
 
-    self.tail = self.tail - 1;
-    return last;
+    --AW:Debug(DEBUG_INFO, "Pop Frame (" .. table.getn(self.frames) .. ") " .. tostring(first));
+    return first;
 end
 
---[[
-    Recycle the item pass in argument
-]]
+--- Recycle the item pass in argument
 local _recycle = function(self, item)
     item:ClearAllPoints();
     item:Hide();
 
-    if (self.tail >= self.maxPoolSize) then
+    if (table.getn(self.frames) >= self.maxPoolSize) then
         item = nil;
         return;
     end
 
-    table.insert(self.frames, 0, item);
-    self.tail = self.tail + 1;
+    table.insert(self.frames, item);
+
+    --AW:Debug(DEBUG_INFO, "Recycle Frame (" .. table.getn(self.frames) .. ") " .. tostring(item));
 end
 
---[[
-    Create a new frame pool
-]]
+---Create a new frame pool
+---@param frameParent table root parent frame
+---@param frameTemplate string name of the template to apply
+---@param maxPoolSize number maximum number of item in the pool
 function WowFramePool:new(frameParent, frameTemplate, maxPoolSize)
     local inst = {};
     inst.frameParent = frameParent;
@@ -48,7 +43,6 @@ function WowFramePool:new(frameParent, frameTemplate, maxPoolSize)
 
     inst.maxPoolSize = maxPoolSize;
     inst.frames = {};
-    inst.tail = 0;
 
     local methods = {
         Recycle = _recycle;

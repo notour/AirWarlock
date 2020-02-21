@@ -166,11 +166,13 @@ end
 ]]
 function AWProfileModule:HasTimerInfoToUpdate(warlocks)
     for indx, data in pairs(warlocks) do
-        if (data.Profile ~= nil and data.Profile.Banish ~= nil) then
+        if (data ~= nil and data.Banish ~= nil) then
             return true;
         end
     end
-    return false;
+
+    local currentProfile = AWProfileModule:GetCurrent();
+    return currentProfile ~= nil and currentProfile.Banish ~= nil;
 end
 
 --[[

@@ -10,7 +10,7 @@
 
     <Frame name="NRUIAddonWindow" virtual="true" enabledMouse="true">
 		<Layers>
-			<Layer level="BORDER">
+			<!-- <Layer level="BORDER">
 				<Texture parentKey="TopBorder" inherits="NRLightBlackTexture">
 					<Anchors>
 						<Anchor point="TOPLEFT" />
@@ -35,7 +35,7 @@
                         <Anchor point="BOTTOMRIGHT" x="1" />
 					</Anchors>
 				</Texture>
-			</Layer>
+			</Layer> -->
 
             <Layer level="BACKGROUND">
                 <Texture parentKey="TitleBg" inherits="NRLightBlackTexture">
@@ -55,7 +55,7 @@
             <Layer level="OVERLAY">
 				<Texture parentKey="TopLeftCorner" inherits="NRLightBlackTexture">
 					<Anchors>
-						<Anchor point="TOPLEFT" x="-6" y="1"/>
+						<Anchor point="TOPLEFT" x="" y="1"/>
 					</Anchors>
 				</Texture>
 				<Texture parentKey="TopRightCorner" inherits="NRLightBlackTexture">
