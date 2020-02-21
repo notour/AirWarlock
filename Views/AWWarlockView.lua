@@ -265,7 +265,7 @@ local _updateWarlockInfo = function(data, parentHostFrame)
     currentHostFrame:Show();
 
 
-    AW:Debug(DEBUG_DEVELOP, "Return : " .. tostring(currentHostFrame));
+    --AW:Debug(DEBUG_DEVELOP, "Return : " .. tostring(currentHostFrame));
 
     return currentHostFrame;
 end
@@ -337,7 +337,7 @@ function AWWarlockViewModule:Initialize(AWModule)
 
     UIFrame:SetScript("OnHide", function()
         for player, frame in pairs(AWWarlockViewModule.PlayerFrames) do
-            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. player .. "");
+            --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. player .. "");
             AWWarlockViewModule.FramePool:Recycle(frame);
         end
 
@@ -368,20 +368,20 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     for id, data in ipairs(warlocks) do
         previsouHost = _updateWarlockInfo(data, previsouHost);
         hostUsed[data.UnitName] = previsouHost;
-        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id .. " frame used " .. tostring(previsouHost));
+        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id .. " frame used " .. tostring(previsouHost));
     end
 
-    for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
-        AW:Debug("PlayerFrames " .. key);
-    end
+    -- for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
+    --     AW:Debug("PlayerFrames " .. key);
+    -- end
 
-    for key, frame in pairs(hostUsed) do
-        AW:Debug("HostUsed " .. key);
-    end
+    -- for key, frame in pairs(hostUsed) do
+    --     AW:Debug("HostUsed " .. key);
+    -- end
 
     for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
         if (hostUsed[key] == nil) then
-            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
+            --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
             AWWarlockViewModule.FramePool:Recycle(frame);
         end
     end

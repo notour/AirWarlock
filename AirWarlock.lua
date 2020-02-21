@@ -347,7 +347,7 @@ function AW:OnUpdate(elapsed)
     end
 
     if (AW.Warlocks ~= nil and AWWarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))  then
-        AWWarlockView:UpdateAll(AW.Warlocks);
+        AW:_updateWarlockMainView();
     end
 end
 
