@@ -40,7 +40,7 @@ local _setupPlayerInfo = function(frame, data, root)
     frame:SetPoint("TOPLEFT", root.PlayerInfoHost);
     frame:SetPoint("BOTTOMRIGHT", root.PlayerInfoHost);
 
-    if (profile.IsOnline) then
+    if (data.IsConnected) then
         frame.PlayerName:SetFontObject("GameFontHighlightSmall");
     else
         frame.PlayerName:SetFontObject("GameFontDisable");
@@ -262,6 +262,7 @@ local _updateWarlockInfo = function(data, parentHostFrame)
 
     currentHostFrame:SetSize(100, totalHeight);
 
+    currentHostFrame:Show();
     return currentHostFrame;
 end
 
@@ -330,6 +331,15 @@ function AWWarlockViewModule:Initialize(AWModule)
         AW_WarlocK.View_HEIGHT = UIFrame:GetHeight();
     end);
 
+    UIFrame:SetScript("OnHide", function()
+        for player, frame in pairs(AWWarlockViewModule.PlayerFrames) do
+            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. player .. "");
+            AWWarlockViewModule.FramePool:Recycle(frame);
+        end
+
+        AWWarlockViewModule.PlayerFrames = {};
+    end);
+
     UIFrame:Hide();
 end
 
@@ -348,24 +358,23 @@ end
 ---Update the view by all the warlocks information
 ---@param warlocks table[] warlocks data info
 function AWWarlockViewModule:UpdateAll(warlocks)
-    local sortWarlocks = {};
-    for name, data in pairs(warlocks) do
-        table.insert(sortWarlocks, data);
-    end
-    table.sort(sortWarlocks, function(a, b) return a.Order < b.Order end);
-
     local previsouHost = nil;
-    for id, data in ipairs(sortWarlocks) do
+    local hostUsed = {};
+
+    for id, data in ipairs(warlocks) do
         previsouHost = _updateWarlockInfo(data, previsouHost);
+        hostUsed[data.UnitName] = previsouHost;
+        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id);
     end
 
-    for key, data in pairs(AWWarlockViewModule.PlayerFrames) do
-        if (warlocks[key] == nil) then
-            AWWarlockViewModule.PlayerFrames[key] = nil;
-            --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
-            AWWarlockViewModule.FramePool:Recycle(data);
+    for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
+        if (hostUsed[key] == nil) then
+            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
+            AWWarlockViewModule.FramePool:Recycle(frame);
         end
     end
+
+    AWWarlockViewModule.PlayerFrames = hostUsed;
 end
 
 --- Hide the main view

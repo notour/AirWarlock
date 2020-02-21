@@ -101,6 +101,8 @@ function AW:OnInitialize()
     AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
     self:RegisterChatCommand("AW", "SlashCommands")
 
+    AW.Warlocks = {};
+
     AWAceCommModule:Initialize(AW, "AWSYNC");
     AWAceCommModule:RegisterEventCallback("UPDATE", "UpdateWarlockData");
     AWAceCommModule:RegisterEventCallback("ASK", "SendProfileUpdateCallback");
@@ -146,19 +148,27 @@ function AW:UpdateMembersInfo()
         return
     end
 
-    local warlocks = {}
-    local nbMembers = 0
-    local unitPrefix = ""
+    local memberWarlocks = {}
     local allMembers = {}
-    local playerName = UnitName("Player");
 
-    AW.PlayerProfile = AWProfile:GetProfileUpdated();
-    warlocks[playerName] = { Unit = "Player", UnitName = playerName, Order = 0, Profile = AW.PlayerProfile };
+    local nbMembers = 0
+    local unitPrefix = "Party"
+    local playerName = UnitName("Player");
+    local _, englishClass = UnitClass("Player")
 
     if (UnitInRaid("Player")) then
         unitPrefix = "Raid"
-    elseif (UnitInParty("Player")) then
-        unitPrefix = "Party"
+    end
+
+    allMembers[playerName] = { 
+        MemberId = "Player",
+        UnitName = playerName,
+        Class = englishClass:lower(),
+        IsCurrentPlayer = true
+    };
+
+    if (englishClass:lower() == ClassTypeLower) then
+        table.insert(memberWarlocks, playerName);
     end
 
     nbMembers = GetNumGroupMembers()
@@ -169,29 +179,62 @@ function AW:UpdateMembersInfo()
             local _, englishClass = UnitClass(memberId)
             if (englishClass) then
                 local unitName = UnitName(memberId)
-                allMembers[unitName] = { MemberId = memberId, Class = englishClass:lower(), IsConnected = UnitIsConnected(memberId) }
-                if (englishClass:lower() == ClassTypeLower) then
-                    
-                    if (unitName ~= AW.PlayerName and warlocks[unitName] == nil) then
-                        warlocks[unitName] = { UnitName = unitName, Order = indx, Profile = AWProfile:Default() }
-                    end
+                
+                local member = { 
+                    MemberId = memberId,
+                    UnitName = unitName,
+                    Class = englishClass:lower(), 
+                    IsConnected = UnitIsConnected(memberId),
+                    IsCurrentPlayer = unitName == playerName
+                };
 
-                    if (warlocks[unitName] ~= nil) then
-                        warlocks[unitName].Unit = memberId;
-                    end
+                allMembers[unitName] = member;
+                if (englishClass:lower() == ClassTypeLower) then
+                    table.insert(memberWarlocks, unitName);
                 end
             end
         end
     end
 
-    AW.Warlocks = warlocks;
+    AW.WarlocksMembers = memberWarlocks;
     AW.AllMembers = allMembers;
 
-    for key, info in pairs(warlocks) do
-        info.Profile.IsOnline = UnitIsConnected(info.Unit);
+    AW:Debug(DEBUG_INFO, "UpdateMembersInfo");
+    AW:_updateWarlockMainView();
+end
+
+--- Update the warlocks data and update the display with them
+function AW:_updateWarlockMainView()
+
+    if (AWWarlockView:IsVisible() == false) then
+        AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
+        return;
     end
 
-    AW:Debug(DEBUG_INFO, "UpdateMembersInfo");
+    local warlocks = { };
+
+    for indx, unitName in ipairs(AW.WarlocksMembers) do
+        local warlockProfile = AW.AllMembers[unitName];
+
+        if (warlockProfile ~= nil) then
+            if (warlockProfile.IsCurrentPlayer) then
+                warlockProfile.Profile = AWProfile:GetProfileUpdated();
+            else
+                warlockProfile.Profile = AW.Warlocks[unitName];
+                if (warlockProfile.Profile == nil) then
+                    warlockProfile.Profile = { }
+                end
+            end
+
+            if (warlockProfile.Profile ~= nil) then
+                warlockProfile.IsConnected = UnitIsConnected(warlockProfile.MemberId);
+                table.insert(warlocks, warlockProfile);
+
+                AW:Debug(DEBUG_INFO, "_updateWarlockMainView " .. table.getn(warlocks) ..  " UnitName " .. unitName .. " isConnected " .. tostring(warlockProfile.IsConnected) .. " IsCurrentPlayer " .. tostring(warlockProfile.IsCurrentPlayer));
+            end
+        end
+    end
+
     AWWarlockView:UpdateAll(warlocks);
 end
 
@@ -207,7 +250,7 @@ function AW:SendProfileUpdate()
     local playerName = UnitName("PLAYER");
     if (AW.Warlocks ~= nil and AW.Warlocks[playerName] ~= nil) then
         local userData = AWProfile:GetProfileUpdated()
-        AW.Warlocks[playerName].Profile = userData;
+        AW.Warlocks[playerName] = userData;
         AWAceCommModule:SendMessageToMember("UPDATE", userData);
     end
 end
@@ -219,11 +262,10 @@ function AW:UpdateWarlockData(subEvent, profile)
 
     AW:UpdateMembersInfo();
 
-    if (profile ~= nil and profile.Name ~= nil and AW.Warlocks[profile.Name] ~= nil) then
-        AW.Warlocks[profile.Name].Profile = profile;
+    if (profile ~= nil and profile.Name ~= nil) then
+        AW.Warlocks[profile.Name] = profile;
 
         AW:Debug(DEBUG_INFO, "UpdateWarlockData by " .. tostring(profile.Name));
-
     end
 
     AW:Debug(DEBUG_INFO, "UpdateWarlockData " .. tostring(subEvent));
@@ -274,8 +316,8 @@ function AW:SlashCommands(args)
         end
 
         if (args ~= nil and arg1:lower() == "show") then
-            AW:UpdateMembersInfo();
             AWWarlockView:Show();
+            AW:UpdateMembersInfo();
         end
 
         if (args ~= nil and arg1:lower() == "hide") then
@@ -308,7 +350,6 @@ function AW:OnUpdate(elapsed)
     end
 
     if (AW.Warlocks ~= nil and AWWarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))  then
-        AW:Debug(DEBUG_INFO, "OnUpdate");
         AWWarlockView:UpdateAll(AW.Warlocks);
     end
 end
