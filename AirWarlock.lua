@@ -104,7 +104,7 @@ function AW:OnInitialize()
     AW.Warlocks = {};
 
     AWAceCommModule:Initialize(AW, "AWSYNC");
-    AWAceCommModule:RegisterEventCallback("UPDATE", "UpdateWarlockData");
+    AWAceCommModule:RegisterEventCallback("UPDATE", "UpdateWarlockDataCallback");
     AWAceCommModule:RegisterEventCallback("ASK", "SendProfileUpdateCallback");
     AWAceCommModule:RegisterEventCallback("CURSE", "SetCurseAssignationTargetCallback");
     AWAceCommModule:RegisterEventCallback("TARGET", "SetAssignationTargetCallback");
@@ -253,20 +253,20 @@ end
 --- Called after an "UPDATE" sub event to update the local information on a specific warlock member
 ---@param subEvent string sub event name
 ---@param profile table warlock member profile info
-function AW:UpdateWarlockData(subEvent, profile)
+function AW:UpdateWarlockDataCallback(subEvent, profile)
 
-    AW:Debug(DEBUG_INFO, "UpdateWarlockData " .. tostring(subEvent) .. " profile " .. tostring(profile));
+    AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent) .. " profile " .. tostring(profile));
 
     AW:UpdateMembersInfo();
 
     if (profile ~= nil and profile.Name ~= nil) then
         AW.Warlocks[profile.Name] = profile;
 
-        AW:Debug(DEBUG_INFO, "UpdateWarlockData by " .. tostring(profile.Name));
+        AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback by " .. tostring(profile.Name));
     end
 
-    AW:Debug(DEBUG_INFO, "UpdateWarlockData " .. tostring(subEvent));
-    AWWarlockView:UpdateAll(AW.Warlocks);
+    AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent));
+    AW:_updateWarlockMainView();
 end
 
 --[[

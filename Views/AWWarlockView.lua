@@ -219,7 +219,7 @@ local _updateWarlockInfo = function(data, parentHostFrame)
     if (currentHostFrame == nil) then
         currentHostFrame = AWWarlockViewModule.FramePool:Pop();
 
-        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Create new currentHostFrame");
+        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Create new currentHostFrame");
 
         AWWarlockViewModule.PlayerFrames[data.UnitName] = currentHostFrame;
         currentHostFrame:SetSize(100, 50);
@@ -263,6 +263,10 @@ local _updateWarlockInfo = function(data, parentHostFrame)
     currentHostFrame:SetSize(100, totalHeight);
 
     currentHostFrame:Show();
+
+
+    AW:Debug(DEBUG_DEVELOP, "Return : " .. tostring(currentHostFrame));
+
     return currentHostFrame;
 end
 
@@ -364,12 +368,20 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     for id, data in ipairs(warlocks) do
         previsouHost = _updateWarlockInfo(data, previsouHost);
         hostUsed[data.UnitName] = previsouHost;
-        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id);
+        AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id .. " frame used " .. tostring(previsouHost));
+    end
+
+    for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
+        AW:Debug("PlayerFrames " .. key);
+    end
+
+    for key, frame in pairs(hostUsed) do
+        AW:Debug("HostUsed " .. key);
     end
 
     for key, frame in pairs(AWWarlockViewModule.PlayerFrames) do
         if (hostUsed[key] == nil) then
-            --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
+            AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Recycle ".. key .. "");
             AWWarlockViewModule.FramePool:Recycle(frame);
         end
     end
