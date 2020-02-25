@@ -205,11 +205,11 @@ end
 ---@param data table warlock data
 ---@param parentHostFrame table previous related frame
 local _updateWarlockInfo = function(data, parentHostFrame)
-    --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "UpdateWarlockInfo : " .. data.Order .. " " .. data.UnitName);
+    AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "UpdateWarlockInfo : " .. data.UnitName);
 
     local currentHostFrame = AWWarlockViewModule.PlayerFrames[data.UnitName];
 
-    local parent = AWWarlockViewModule.Content;
+    local parent = AWWarlockViewModule.ContentRoot;
     local firstElem = true;
     if (parentHostFrame ~= nil) then
         parent = parentHostFrame;
@@ -236,14 +236,14 @@ local _updateWarlockInfo = function(data, parentHostFrame)
 
     currentHostFrame:ClearAllPoints(true);
     
+    AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, tostring(parent) .. " <- " .. tostring(currentHostFrame) .. " : " .. tostring(parent.Name) .. " <- ".. data.UnitName);
+
     if (firstElem) then
         currentHostFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0);
         currentHostFrame:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, 0);
     else
         currentHostFrame:SetPoint("TOPLEFT", parent, "BOTTOMLEFT", 0, -10);
         currentHostFrame:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", 0, -10);
-        
-        --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, parent.Name .. " <- ".. data.UnitName);
     end
 
     local hostUsed = {};
@@ -365,7 +365,13 @@ function AWWarlockViewModule:UpdateAll(warlocks)
     local previsouHost = nil;
     local hostUsed = {};
 
-    for id, data in ipairs(warlocks) do
+    if (AWWarlockViewModule.PlayerFrames ~= nil) then
+        for _, frame in pairs(AWWarlockViewModule.PlayerFrames) do
+            frame:ClearAllPoints();
+        end
+    end
+
+    for _, data in ipairs(warlocks) do
         previsouHost = _updateWarlockInfo(data, previsouHost);
         hostUsed[data.UnitName] = previsouHost;
         --AWWarlockViewModule.AW:Debug(DEBUG_DEVELOP, "Insert ".. data.UnitName .. " id " .. id .. " frame used " .. tostring(previsouHost));
