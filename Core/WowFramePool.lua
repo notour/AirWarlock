@@ -3,7 +3,8 @@ local WowFramePool = AWModuleLoader:CreateModule("WowFramePool");
 --- Pop an item from the pool if exist or create a new one
 local _pop = function(self)
     if (table.getn(self.frames) == 0) then
-        return CreateFrame("Frame", nil, self.frameParent, self.frameTemplate);
+        self.createCount = self.createCount + 1;
+        return CreateFrame("Frame", tostring(self.frameTemplate) .. tostring(self.createCount), self.frameParent, self.frameTemplate);
     end
 
     local first = self.frames[1];
@@ -36,6 +37,7 @@ function WowFramePool:new(frameParent, frameTemplate, maxPoolSize)
     local inst = {};
     inst.frameParent = frameParent;
     inst.frameTemplate = frameTemplate;
+    inst.createCount = 0;
 
     if (maxPoolSize == nil) then
         maxPoolSize = 40;

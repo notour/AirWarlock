@@ -14,7 +14,7 @@ local InDebugMode = true
 local ClassTypeLower = "warlock";
 
 local Events = {
-    UpdateMembersInfo =  {
+    UpdateMembersInfoCallback =  {
         -- Update warlock lists
         --"PARTY_MEMBERS_CHANGED",
         "GROUP_ROSTER_UPDATE",
@@ -23,7 +23,6 @@ local Events = {
         "PARTY_MEMBER_ENABLE",
         "RAID_ROSTER_UPDATE",
         "UNIT_CONNECTION",
-
     },
 
     UpdateTPList = {
@@ -80,14 +79,6 @@ local AWAceCommModule = AWModuleLoader:ImportModule("AWAceCommModule");
 AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
 _AW = {...}
 
-
-local _getComTarget = function()
-    if (UnitInRaid("Player")) then
-        return "RAID";
-    end
-    return "PARTY";
-end
-
 --- Called at the addon initialization
 function AW:OnInitialize()
 
@@ -139,6 +130,12 @@ end
 ---Called to save the current config
 function AW:SaveConfig()
     AW_WarlocK.Config = AW.db.global;
+end
+
+---Update the current members info based on the PARTY/RAID informations
+function AW:UpdateMembersInfoCallback()
+    AW:UpdateMembersInfo();
+    AW:SendProfileUpdate();
 end
 
 ---Update the current members info based on the PARTY/RAID informations
@@ -207,7 +204,7 @@ end
 function AW:_updateWarlockMainView()
 
     if (AWWarlockView:IsVisible() == false) then
-        AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
+        --AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
         return;
     end
 
