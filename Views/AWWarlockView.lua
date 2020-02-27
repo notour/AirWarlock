@@ -59,18 +59,18 @@ local _setupPlayerInfo = function(frame, data, root)
     if (profile.AssignCurse ~= nil) then
         local name, _, icon = GetSpellInfo(profile.AssignCurse);
         frame.assignCurseIco:SetNormalTexture(icon);
-        frame.assignCurseIco:SetScript("OnEnter", function()
-            GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_MOUSE", 0, -50);
-            GameTooltip:SetText(name)
-            GameTooltip:Show()
-        end);
+        -- frame.assignCurseIco:SetScript("OnEnter", function()
+        --     GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_MOUSE", 0, -50);
+        --     GameTooltip:SetText(name)
+        --     GameTooltip:Show()
+        -- end);
 
-        frame.assignCurseIco:SetScript("OnLeave", function()
-            GameTooltip:Hide()
-        end);
+        -- frame.assignCurseIco:SetScript("OnLeave", function()
+        --     GameTooltip:Hide()
+        -- end);
 
-        GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_CURSOR");
-        GameTooltip:SetText(name);
+        -- GameTooltip:SetOwner(frame.assignCurseIco, "ANCHOR_CURSOR");
+        -- GameTooltip:SetText(name);
         frame.assignCurseIco:Show();
     else
         frame.assignCurseIco:Hide();
