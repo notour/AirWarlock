@@ -4,6 +4,10 @@
 
 -- Global debug levels, see bottom of this file and `debugLevel` in QuestieOptionsAdvanced.lua for relevant code
 -- When adding a new level here it MUST be assigned a number and name in `debugLevel.values` as well added to Questie:Debug below
+
+AW_VERSION = "1.1.2"
+AW_VERSION_NUM = "3"
+
 DEBUG_CRITICAL = "|cff00f2e6[CRITICAL]|r"
 DEBUG_ELEVATED = "|cffebf441[ELEVATED]|r"
 DEBUG_INFO = "|cff00bc32[INFO]|r"
@@ -71,10 +75,13 @@ local AWProfile = AWModuleLoader:ImportModule("AWProfile");
 local AWSerializer = AWModuleLoader:ImportModule("AWSerializer");
 
 -- @class AWWarlockView
-local AWWarlockView = AWModuleLoader:ImportModule("AWWarlockView");
+--local AWWarlockView = AWModuleLoader:ImportModule("AWWarlockView");
 
 --- @class AWAceCommModule
 local AWAceCommModule = AWModuleLoader:ImportModule("AWAceCommModule");
+
+--- @class AWWarlockViewGUI
+local AWWarlockViewGUIModule = AWModuleLoader:ImportModule("AWWarlockViewGUI");
 
 AW = LibStub("AceAddon-3.0"):NewAddon("AW", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceBucket-3.0", "AceSerializer-3.0")
 _AW = {...}
@@ -82,14 +89,18 @@ _AW = {...}
 --- Called at the addon initialization
 function AW:OnInitialize()
 
-    local defaultConfig = AWOptionDefaults:Load();
+    AW.Config = AWOptionDefaults:Load();
     if (AW_WarlocK == nil) then
-        AW_WarlocK = { db = AW.db };
+        AW_WarlocK = { Config = defaultConfig };
     elseif (AW_WarlocK ~= nil and AW_WarlocK.Config ~= nil) then
-        defaultConfig.global = AW_WarlocK.Config;
+        AW.Config = AW_WarlocK.Config;
     end
 
-    AW.db = LibStub("AceDB-3.0"):New("AWConfig", defaultConfig, true)
+    AW.RunningConfig = {
+        Version = AW_VERSION,
+        MaxVersion = AW_VERSION_NUM,
+    }
+
     self:RegisterChatCommand("AW", "SlashCommands")
 
     AW.Warlocks = {};
@@ -104,11 +115,12 @@ function AW:OnInitialize()
     local frame = CreateFrame("Frame")
     frame:SetScript("OnUpdate", AW.OnUpdate)
     
-    AW:Debug("Loading : debugEnabledPrint " .. tostring(AW.db.global.debugEnabledPrint));
+    AW:Debug("Loading : debugEnabledPrint " .. tostring(AW.Config.DebugEnabledPrint));
 
     self._registerScript = {}
 
-    AWWarlockView:Initialize(AW);
+    --AWWarlockView:Initialize(AW);
+    AW.WarlockView = AWWarlockViewGUIModule:CreateNewWindow();
 
     for key,mapEvent in pairs(Events) do
         for indx,eventName in pairs(mapEvent) do
@@ -129,7 +141,7 @@ end
 
 ---Called to save the current config
 function AW:SaveConfig()
-    AW_WarlocK.Config = AW.db.global;
+    AW_WarlocK.Config = AW.Config;
 end
 
 ---Update the current members info based on the PARTY/RAID informations
@@ -203,8 +215,8 @@ end
 --- Update the warlocks data and update the display with them
 function AW:_updateWarlockMainView()
 
-    if (AWWarlockView:IsVisible() == false) then
-        --AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
+    if (AW.WarlockView:IsVisible() == false) then
+        AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
         return;
     end
 
@@ -226,13 +238,11 @@ function AW:_updateWarlockMainView()
             if (warlockProfile.Profile ~= nil) then
                 warlockProfile.IsConnected = UnitIsConnected(warlockProfile.MemberId);
                 table.insert(warlocks, warlockProfile);
-
-                --AW:Debug(DEBUG_INFO, "_updateWarlockMainView " .. table.getn(warlocks) ..  " UnitName " .. unitName .. " isConnected " .. tostring(warlockProfile.IsConnected) .. " IsCurrentPlayer " .. tostring(warlockProfile.IsCurrentPlayer));
             end
         end
     end
 
-    AWWarlockView:UpdateAll(warlocks);
+    AW.WarlockView:UpdateAll(warlocks, AW.RunningConfig);
 end
 
 ---callback on "ASK" subevent to Send a profil update to the other Addon member
@@ -306,30 +316,36 @@ function AW:SlashCommands(args)
 
         if (args ~= nil and arg1:lower() == "reset") then
             AW_WarlocK = { };
-            AWWarlockView:Reset();
+
+            AW.WarlockView:Reset();
+            AW._updateWarlockMainView();
         end
 
         if (args ~= nil and arg1:lower() == "show") then
-            AWWarlockView:Show();
+            AW.WarlockView:Show();
+            AW:SendProfileUpdate();
             AW:UpdateMembersInfo();
+            AW:Debug(DEBUG_INFO, "Air warlock SHOW");
         end
 
         if (args ~= nil and arg1:lower() == "hide") then
-            AWWarlockView:Hide();
+            AW.WarlockView:Hide();
+            AW:SendProfileUpdate();
+            AW:Debug(DEBUG_INFO, "Air warlock HIDE");
         end
 
         if (args ~= nil and arg1:lower() == "debug") then
             local debugON = arg2:lower() == "1" or arg2:lower() == "on";
             local debugOFF = arg2:lower() == "0" or arg2:lower() == "off";
 
-            if (debugON and AW.db.global.debugEnabledPrint == false) then
-                AW.db.global.debugEnabledPrint = true;
+            if (debugON and AW.Config.DebugEnabledPrint == false) then
+                AW.Config.DebugEnabledPrint = true;
                 AW:Debug(DEBUG_INFO, "Air warlock : Debug log ON");
             end
 
-            if (debugOFF and AW.db.global.debugEnabledPrint) then
+            if (debugOFF and AW.Config.DebugEnabledPrint) then
                 AW:Debug(DEBUG_INFO, "Air warlock : Debug log OFF");
-                AW.db.global.debugEnabledPrint = false;
+                AW.Config.DebugEnabledPrint = false;
             end
 
             AW:SaveConfig();
@@ -343,7 +359,7 @@ function AW:OnUpdate(elapsed)
         return;
     end
 
-    if (AW.Warlocks ~= nil and AWWarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))  then
+    if (AW.Warlocks ~= nil and AW.WarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))  then
         AW:_updateWarlockMainView();
     end
 end
@@ -492,15 +508,15 @@ function AW:OnDisable()
 end
 
 function AW:Debug(...)
-    if (AW.db.global.debugEnabledPrint == true) then
+    --if (AW.Config.DebugEnabledPrint == true) then
         print(...)
-    end
+    --end
 end
 
 function AW:debug(...)
-    if (AW.db.global.debugEnabledPrint == true) then
+    --if (AW.Config.DebugEnabledPrint == true) then
         AW:Debug(...)
-    end
+    --end
 end
 
 function AW:Error(...)

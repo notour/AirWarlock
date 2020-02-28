@@ -23,6 +23,8 @@ Core\AWOptionsDefault.lua
 
 Core\AWAceCommModule.lua
 
+Views\AWWarlockViewWidget.lua
+Views\AWWarlockViewGUI.lua
 Views\AWWarlockView.lua
 
 # Profiles

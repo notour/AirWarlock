@@ -68,15 +68,11 @@ function AWProfileModule:GetCurrent()
         self.currentProfile = {
             Name = UnitName("player"),
             NBSoulFragment = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId),
-            AvailableCurses = _listAllAvailabledCurseOnPlayer()
+            AvailableCurses = _listAllAvailabledCurseOnPlayer(),
         };
     end
 
-    -- for indx,spellId in pairs(self.currentProfile.AvailableCurses) do
-    --     local name, rank = GetSpellInfo(spellId);
-    --     AW:Debug("Availabled curse ".. spellId .. " : |Hspell:" .. spellId .."|h|r|cff71d5ff[" .. tostring(name) .. " " .. tostring(rank) .. "]|r|h");
-    -- end
-
+    self.currentProfile.VersionNum = AW_VERSION_NUM
     return self.currentProfile;
 end
 
