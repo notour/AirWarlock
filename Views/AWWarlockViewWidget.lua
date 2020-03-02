@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 Warlock Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "WarlockPlayer", 24
+local Type, Version = "WarlockPlayerContainer", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -151,21 +151,16 @@ local methods = {
     ["OnAcquire"] = function(self)
 		self:SetWidth(300)
         self:SetHeight(100)
-    
 
         if (self._player == nil) then
-
-            AW:Debug("OnAcquire " .. tostring(self._debugIndex));
-
-            self._player = _createPlayerContainer();
-            self:AddChildren(self._player);
+            self._player = AceGUI:Create("WarlockPlayer");
+            self:AddChild(self._player);
         end
-        -- container._banish = _createBanContainer();
-        -- container:AddChildren(container._banish);
 	end,
 
     ["OnRelease"] = function(self) 
         AW:Debug("OnRelease " .. tostring(self._debugIndex));
+        self._player:Release();
         self._player = nil;
     end,
 
@@ -187,6 +182,16 @@ local methods = {
     end,
     
     ["UpdateWarlockView"] = function(self, warlockData, config)
+
+        if (self._player ~= nil) then
+            self._player.UpdateWarlockView(self._player, warlockData, config);
+
+            self._player:DoLayout();
+            self:DoLayout();
+        end
+    end,
+
+    ["UpdateWarlockViewOld"] = function(self, warlockData, config)
         
         self:SetUserData("Player", warlockData);
 
@@ -280,19 +285,14 @@ local function Constructor()
     local container = AceGUI:Create("SimpleGroup")
     container:SetFullWidth(true)
     container:SetAutoAdjustHeight(true)
-    container:SetLayout("Flow")
+    container:SetLayout("Flow");
 
-    -- local dialogbg = container.frame:CreateTexture(nil, "BACKGROUND")
-    -- dialogbg:SetAllPoints(true);
-    -- dialogbg:SetColorTexture(0.4, 0.4, 0.4, 0.4);
-    
-    -- TODO : Create a widget player && Create a widget bannish
-    -- To managed more easil the release and display
+    local dialogbg = container.frame:CreateTexture(nil, "BACKGROUND")
+    dialogbg:SetAllPoints(true);
+    dialogbg:SetColorTexture(0.4, 0.4, 0.4, 0.4);
 
-    -- container._player = _createPlayerContainer();
+    -- container._player = AceGUI:Create("WarlockPlayer");
     -- container:AddChildren(container._player);
-
-
 
     -- container._banish = _createBanContainer();
     -- container:AddChildren(container._banish);

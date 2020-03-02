@@ -36,7 +36,7 @@ local __updateWarlocksView = function(self, warlocks, config)
         local frame = self._warlockFrames[indx];
 
         if (frame == nil) then
-            frame = AceGUI:Create("WarlockPlayer");
+            frame = AceGUI:Create("WarlockPlayerContainer");
 
             self._warlockFrames[indx] = frame;
             self._windowFrame:AddChild(frame);
