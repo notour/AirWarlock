@@ -5,8 +5,8 @@
 -- Global debug levels, see bottom of this file and `debugLevel` in QuestieOptionsAdvanced.lua for relevant code
 -- When adding a new level here it MUST be assigned a number and name in `debugLevel.values` as well added to Questie:Debug below
 
-AW_VERSION = "1.1.3"
-AW_VERSION_NUM = "4"
+AW_VERSION = "1.1.4"
+AW_VERSION_NUM = "5"
 
 DEBUG_CRITICAL = "|cff00f2e6[CRITICAL]|r"
 DEBUG_ELEVATED = "|cffebf441[ELEVATED]|r"
