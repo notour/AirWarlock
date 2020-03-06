@@ -162,7 +162,7 @@ function AW:UpdateMembersInfo()
 
     local nbMembers = 0
     local unitPrefix = "Party"
-    local playerName = UnitName("Player");
+    local playerName = AW.PlayerName;
     local _, englishClass = UnitClass("Player")
 
     if (UnitInRaid("Player")) then
@@ -311,6 +311,7 @@ function AW:SlashCommands(args)
         if (args ~= nil and arg1:lower() == "update") then
             AW:SendProfileUpdate();
             AW:UpdateMembersInfo();
+            AWAceCommModule:SendMessageToMember("ASK");
         end
 
         if (args ~= nil and arg1:lower() == "show") then
