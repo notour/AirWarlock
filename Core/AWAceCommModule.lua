@@ -33,7 +33,7 @@ function AWAceCommModule:SendMessageToMember(subeventType, data)
     end
 
     local message = _serializer:Serialize(container);
-    AW:Debug(DEBUG_SPAM, "[SEND]  " .. tostring(self._commRoot) .. "." .. tostring(container.SubEvent));
+    AW:Debug(DEBUG_SPAM, "[SEND]  " .. tostring(self._commRoot) .. "." .. tostring(container.SubEvent) .. " target : " .. target);
     self:SendCommMessage(self._commRoot, message, target);
 end
 
@@ -68,4 +68,3 @@ function AWAceCommModule:_SafeCommMessageHandler(prefix, message, msgType, sende
         self._addon[self._callbacks[container.SubEvent]](self._addon, container.SubEvent, container.Data);
     end
 end
-/
