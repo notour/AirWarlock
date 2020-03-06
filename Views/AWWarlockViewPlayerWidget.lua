@@ -21,7 +21,7 @@ end
 ---@param WarlockPlayer container
 local _setupAssignMenu = function(container)
     
-    if (container == nil) then
+    if (container == nil or AW.ViewOnly) then
         return;
     end
 

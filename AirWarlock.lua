@@ -197,9 +197,11 @@ function AW:UpdateMembersInfo()
                     IsCurrentPlayer = unitName == playerName
                 };
 
-                allMembers[unitName] = member;
-                if (englishClass:lower() == ClassTypeLower) then
-                    table.insert(memberWarlocks, unitName);
+                if (allMembers[unitName] == nil) then
+                    allMembers[unitName] = member;
+                    if (englishClass:lower() == ClassTypeLower) then
+                        table.insert(memberWarlocks, unitName);
+                    end
                 end
             end
         end
@@ -227,7 +229,7 @@ function AW:_updateWarlockMainViewSafeCall()
 
     local warlocks = { };
 
-    for indx, unitName in ipairs(AW.WarlocksMembers) do
+    for _, unitName in ipairs(AW.WarlocksMembers) do
         local warlockProfile = AW.AllMembers[unitName];
 
         if (warlockProfile ~= nil) then
@@ -259,7 +261,9 @@ end
 
 ---Send a profil update to the other Addon member
 function AW:SendProfileUpdate()
-    AWAceCommModule:SendMessageToMember("UPDATE", AWProfile:GetProfileUpdated());
+    if (AW.ViewOnly == false) then
+        AWAceCommModule:SendMessageToMember("UPDATE", AWProfile:GetProfileUpdated());
+    end
 end
 
 --- Called after an "UPDATE" sub event to update the local information on a specific warlock member
@@ -479,7 +483,8 @@ end
 --- Called when the addon is enabled
 function AW:OnEnable()
     local _, englishClass = UnitClass("Player")
-    AW.IsEnabled = englishClass:lower() == "warlock";
+    AW.IsEnabled = true;
+    AW.ViewOnly = englishClass:lower() ~= "warlock";
 
     AW:SendProfileUpdate();
     AW:UpdateMembersInfo();
