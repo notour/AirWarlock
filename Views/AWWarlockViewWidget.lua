@@ -149,138 +149,57 @@ end
 
 local methods = {
     ["OnAcquire"] = function(self)
-		self:SetWidth(300)
-        self:SetHeight(100)
+        AW:Debug("OnAcquire " .. tostring(self._debugIndex));
 
         if (self._player == nil) then
             self._player = AceGUI:Create("WarlockPlayer");
             self:AddChild(self._player);
         end
+
+        if (self.BaseOnAquire ~= nil) then
+            self:BaseOnAquire();
+        end
 	end,
 
     ["OnRelease"] = function(self) 
-        AW:Debug("OnRelease " .. tostring(self._debugIndex));
-        self._player:Release();
+        self:RemoveChild(self._player, false);
         self._player = nil;
-    end,
 
-	["LayoutFinished"] = function(self, width, height)
-		if self.noAutoHeight then return end
-		self:SetHeight(height or 0)
-	end,
-
-	["OnWidthSet"] = function(self, width)
-		local content = self.content
-		content:SetWidth(width)
-		content.width = width
-	end,
-
-	["OnHeightSet"] = function(self, height)
-		local content = self.content
-		content:SetHeight(height)
-		content.height = height
-    end,
-    
-    ["UpdateWarlockView"] = function(self, warlockData, config)
-
-        if (self._player ~= nil) then
-            self._player.UpdateWarlockView(self._player, warlockData, config);
-
-            self._player:DoLayout();
-            self:DoLayout();
-        end
-    end,
-
-    ["UpdateWarlockViewOld"] = function(self, warlockData, config)
-        
-        self:SetUserData("Player", warlockData);
-
-        -- AW:Debug(DEBUG_DEVELOP, "[UpdateWarlockView] " .. tostring(warlockData) .. " -> " .. warlockData.UnitName);
-        -- AW:Debug(DEBUG_DEVELOP, "   -- UpdateWarlockView " .. tostring(self) .. " -> " .. tostring(self._title));
-        
-        local _player = self._player;
-
-        -- Clean up view data
-        _player._title:SetText("");
-        _player._addonVersionUsedIco:SetImage("Interface\\FriendsFrame\\StatusIcon-Offline");
-        _player._shardCount:SetText("");
-        _player._assignRaidTargetIco:SetImage("");
-        _player._curseIco:SetImage("");
-        _player._title:SetColor(0.3,0.3,0.3);
-
-        if (warlockData == nil or warlockData.Profile == nil) then
-            return;
-        end
-
-        local _profile = warlockData.Profile;
-
-        -- player name
-        _player._title:SetText(warlockData.UnitName);
-
-        -- player addon level
-        if (warlockData.IsConnected ~= nil and warlockData.IsConnected) then
-            _player._title:SetColor(0.9, 0.9, 0.9);
-        end
-
-        if (_profile.VersionNum ~= nil and config ~= nil and config.MaxVersion ~= nil) then
-
-            if (_profile.VersionNum >= config.MaxVersion) then
-                _player._addonVersionUsedIco:SetImage("Interface\\FriendsFrame\\StatusIcon-Online");
-            else
-                _player._addonVersionUsedIco:SetImage("Interface\\FriendsFrame\\StatusIcon-Away");
-            end
-        end
-
-        if (_profile.NBSoulFragment ~= nil) then
-            _player._shardCount:SetText(tostring(_profile.NBSoulFragment));
-        end
-
-        if (_profile.AssignRaidTarget ~= nil and _raidTargetInfo[_profile.AssignRaidTarget] ~= nil) then
-           _player._assignRaidTargetIco:SetImage(_raidTargetInfo[_profile.AssignRaidTarget].Icon);
-        end
-
-        if (_profile.AssignCurse ~= nil) then
-            local name, _, icon = GetSpellInfo(_profile.AssignCurse);
-            _player._curseIco:SetImage(icon);
-        end
-        
-        if (_profile.Banish ~= nil) then
-            local _banish = self._banish;
-            AW:Debug(DEBUG_INFO, "UPDATE ban info");
-
-            if (_banish == nil) then
-                AW:Debug(DEBUG_INFO, "_createBanContainer");
-                _banish = _createBanContainer();
-                self:AddChildren(_banish);
-                self._banish = _banish;
-            end
-
-            if (_profile.Banish.TargetIcon ~= nil) then
-                _banish._banRaidTargetIco:SetImage(_raidTargetInfo[_profile.Banish.TargetIcon].Icon);
-            end
-
-            if (_profile.Banish.TargetName ~= nil) then
-                _banish._banTargetName:SetText(_profile.Banish.TargetName);
-            end
-
-            local now = GetServerTime();
-            if (_profile.Banish.Timeout and _profile.Banish.Timeout > now)  then
-                _banish._banTimer:SetText(_profile.Banish.Timeout - now);
-            end
-        elseif (self._banish ~= nil) then
-            AW:Debug(DEBUG_INFO, "_createBanContainer ----> Release");
-            self._banish:Release();
+        if (self._banish ~= nil) then
+            self:RemoveChild(self._banish, false);
             self._banish = nil;
         end
 
-        self:DoLayout();
-        self.parent:DoLayout();
+        if (self.BaseOnRelease ~= nil) then
+            self:BaseOnRelease();
+        end
+    end,
+
+    ["UpdateWarlockView"] = function(self, warlockData, config)
+
+        if (self._player ~= nil) then
+            self._player:UpdateView(warlockData, config);
+        end
+
+        local needBanishView = warlockData ~= nil and warlockData.Profile ~= nil and warlockData.Profile.Banish ~= nil;
+
+        if (needBanishView and self._banish == nil) then
+            self._banish = AceGUI:Create("WarlockPlayerBanish");
+            self:AddChild(self._banish);
+        end
+
+        if (needBanishView and self._banish ~= nil) then
+            self._banish:UpdateView(warlockData, config);
+        end
+
+        if (needBanishView == false and self._banish ~= nil) then
+            self:RemoveChild(self._banish);
+            self._banish = nil;
+        end
     end,
 }
 
 local function Constructor()
-
-    AW:Debug("CREATE NEW " .. Type);
 
     local container = AceGUI:Create("SimpleGroup")
     container:SetFullWidth(true)
@@ -291,15 +210,14 @@ local function Constructor()
     dialogbg:SetAllPoints(true);
     dialogbg:SetColorTexture(0.4, 0.4, 0.4, 0.4);
 
-    -- container._player = AceGUI:Create("WarlockPlayer");
-    -- container:AddChildren(container._player);
-
-    -- container._banish = _createBanContainer();
-    -- container:AddChildren(container._banish);
+    container.BaseOnAquire = container.OnAcquire;
+    container.BaseOnRelease = container.OnRelease;
 
 	for method, func in pairs(methods) do
 		container[method] = func
 	end
+
+    container.type = Type;
 
 	return container;
 end

@@ -214,9 +214,14 @@ end
 
 --- Update the warlocks data and update the display with them
 function AW:_updateWarlockMainView()
+    AW._needUpdateView = true;
+end
+
+--- Update the warlocks data and update the display with them
+function AW:_updateWarlockMainViewSafeCall()
 
     if (AW.WarlockView:IsVisible() == false) then
-        AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
+        --AW:Debug(DEBUG_INFO, "AWWarlockView:IsVisible() : false");
         return;
     end
 
@@ -262,17 +267,17 @@ end
 ---@param profile table warlock member profile info
 function AW:UpdateWarlockDataCallback(subEvent, profile)
 
-    AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent) .. " profile " .. tostring(profile));
+    --AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent) .. " profile " .. tostring(profile));
 
     AW:UpdateMembersInfo();
 
     if (profile ~= nil and profile.Name ~= nil) then
         AW.Warlocks[profile.Name] = profile;
 
-        AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback by " .. tostring(profile.Name));
+        --AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback by " .. tostring(profile.Name));
     end
 
-    AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent));
+    --AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent));
     AW:_updateWarlockMainView();
 end
 
@@ -297,34 +302,15 @@ function AW:SlashCommands(args)
     
     if (InDebugMode and arg1 ~= nil) then
 
-        if (args ~= nil and arg1:lower() == "current") then
-
-            local userData = AWProfile:GetCurrent()
-            --    local userDataStr =  AWSerializer:Serialize(userData)
-            local serializer = LibStub("AceSerializer-3.0");
-            local userDataStr = serializer:Serialize(userData)
-
-            self:Debug(DEBUG_DEVELOP, userDataStr)
-            self:Debug(DEBUG_DEVELOP, serializer:Serialize(AW.Warlocks))
-            self:Debug(DEBUG_DEVELOP, serializer:Serialize(AW.AllMembers))
-        end
-
         if (args ~= nil and arg1:lower() == "update") then
             AW:SendProfileUpdate();
-            AW:UpdateMembersInfo();
-        end
-
-        if (args ~= nil and arg1:lower() == "reset") then
-            AW_WarlocK = { };
-
-            AW.WarlockView:Reset();
-            AW._updateWarlockMainView();
+            AW:_updateWarlockMainView();
         end
 
         if (args ~= nil and arg1:lower() == "show") then
             AW.WarlockView:Show();
             AW:SendProfileUpdate();
-            AW:UpdateMembersInfo();
+            AW:_updateWarlockMainView();
             AW:Debug(DEBUG_INFO, "Air warlock SHOW");
         end
 
@@ -359,8 +345,9 @@ function AW:OnUpdate(elapsed)
         return;
     end
 
-    if (AW.Warlocks ~= nil and AW.WarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))  then
-        AW:_updateWarlockMainView();
+    if (AW._needUpdateView or (AW.Warlocks ~= nil and AW.WarlockView:IsVisible() and AWProfile:HasTimerInfoToUpdate(AW.Warlocks))) then
+        AW._needUpdateView = false;
+        AW:_updateWarlockMainViewSafeCall();
     end
 end
 
@@ -406,7 +393,7 @@ function AW:LogTrack(eventName, ...)
         local needToUpdate = AWProfile:UpdateTrackingSpellInfo(destGUID, subevent, effect);
         if (needToUpdate) then
             AW:SendProfileUpdate();
-            AW:UpdateMembersInfo();
+            AW:_updateWarlockMainView();
         end
     end
 end
@@ -417,7 +404,6 @@ function AW:UpdateTargetMetaInfo(eventName, ...)
     local vargsInfo = "";
 
     for id, data in pairs(vargs) do
-        --AW:Debug(DEBUG_INFO, "LogTrack : " .. tostring(id) .. " " .. tostring(data));
         vargsInfo = vargsInfo .. tostring(id) .. " " .. tostring(data) .. ", ";
     end
 
@@ -508,15 +494,15 @@ function AW:OnDisable()
 end
 
 function AW:Debug(...)
-    --if (AW.Config.DebugEnabledPrint == true) then
+    if (AW.Config.DebugEnabledPrint == true) then
         print(...)
-    --end
+    end
 end
 
 function AW:debug(...)
-    --if (AW.Config.DebugEnabledPrint == true) then
+    if (AW.Config.DebugEnabledPrint == true) then
         AW:Debug(...)
-    --end
+    end
 end
 
 function AW:Error(...)

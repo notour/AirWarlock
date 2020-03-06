@@ -24,6 +24,7 @@ Databases\Warlock.db.lua
 Core\AWAceCommModule.lua
 
 Views\AWWarlockViewPlayerWidget.lua
+Views\AWWarlockViewPlayerBanishWidget.lua
 Views\AWWarlockViewWidget.lua
 Views\AWWarlockViewGUI.lua
 Views\AWWarlockView.lua

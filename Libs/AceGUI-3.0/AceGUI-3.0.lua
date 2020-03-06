@@ -227,6 +227,8 @@ function AceGUI:Release(widget)
 	widget.frame:ClearAllPoints()
 	widget.frame:Hide()
 	widget.frame:SetParent(UIParent)
+	
+	widget.parent = nil;
 	widget.frame.width = nil
 	widget.frame.height = nil
 	if widget.content then
@@ -235,6 +237,8 @@ function AceGUI:Release(widget)
 	end
 	delWidget(widget, widget.type)
 end
+
+
 
 -----------
 -- Focus --
@@ -470,6 +474,22 @@ do
 			child.frame:Show()
 		end
 		self:DoLayout()
+	end
+
+	WidgetContainerBase.RemoveChild = function(self, child, needRelease)
+		local newChildren = {};
+		for _, widget in pairs(self.children) do
+			if (tostring(widget) ~= tostring(child)) then
+				tinsert(newChildren, widget);
+				AW:Debug(DEBUG_ELEVATED, "KeepChild -> " .. tostring(widget.debugName) .. " parent " .. tostring(widget) .. " == " .. tostring(child));
+			else
+				AW:Debug(DEBUG_ELEVATED, "RemoveChild -> " .. tostring(widget.debugName) .. " parent " .. tostring(widget) .. " == " .. tostring(child));
+			end
+		end
+		if (needRelease == nil or needRelease) then
+			child:Release();
+		end
+		self.children = newChildren;
 	end
 	
 	WidgetContainerBase.ReleaseChildren = function(self)

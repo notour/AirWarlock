@@ -2,43 +2,144 @@ local Type, Version = "WarlockPlayer", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
+local __resetTableSetup = function(container)
+    container:SetFullWidth(true)
+    container:SetAutoAdjustHeight(true)
+    container:SetLayout("Table");
+    container:SetUserData("table", {
+        columns = { 18, 20, 1, 20, 20, 25 },
+        space = 2,
+        --align = "TOPLEFT",
+        alignV = "MIDDLE",
+        alignH = "LEFT"
+    });
+end
+
+local __setupPlayerContainer = function(container) 
+    local dialogbg = container.frame:CreateTexture(nil, "BACKGROUND")
+    dialogbg:SetAllPoints(true);
+    dialogbg:SetColorTexture(0, 0, 0, 1);
+
+    -- Version Icon
+    if (container._addonVersionUsedIco == nil) then
+
+        local _addonVersionUsedIco = AceGUI:Create("Icon");
+        _addonVersionUsedIco:SetImageSize(20, 20);
+        _addonVersionUsedIco.frame:SetPoint("LEFT", 5, 0);
+
+        container._addonVersionUsedIco = _addonVersionUsedIco;
+        container:AddChild(_addonVersionUsedIco);
+    end
+
+    -- Version Assign
+    if (container._assignRaidTargetIco == nil) then
+        local _assignRaidTargetIco = AceGUI:Create("Icon");
+        _assignRaidTargetIco:SetImageSize(20, 20);
+
+        container._assignRaidTargetIco = _assignRaidTargetIco;
+        container:AddChild(_assignRaidTargetIco);
+    end
+
+    -- Player Name
+    if (container._title == nil) then
+        local _title = AceGUI:Create("Label");
+        _title:SetFontObject(GameFontHighlight);
+        _title:SetColor(0.9,0.9,0.9)
+        _title:SetFullWidth(true)
+
+        container._title = _title;
+        container:AddChild(_title);
+    end
+
+    -- Curse Ico
+    if (container._curseIco == nil) then
+        local _curseIco = AceGUI:Create("Icon");
+        _curseIco:SetImageSize(20, 20);
+
+        container._curseIco = _curseIco;
+        container:AddChild(_curseIco);
+    end
+
+    -- Shard Ico
+    if (container._shardIco == nil) then
+        local _shardIco = AceGUI:Create("Icon");
+        _shardIco:SetImage("Interface\\ICONS\\INV_Misc_Gem_Amethyst_02");
+        _shardIco:SetImageSize(20, 20);
+
+        container._shardIco = _shardIco;
+        container:AddChild(_shardIco);
+    end
+
+    -- Shard Count
+    if (container._shardCount == nil) then
+        local _shardCount = AceGUI:Create("Label");
+        _shardCount:SetFontObject(GameFontNormalSmall);
+        _shardCount:SetColor(0.9,0.9,0.9)
+        _shardCount:SetFullWidth(true)
+        _shardCount:SetText("142")
+
+        container._shardCount = _shardCount;
+        container:AddChild(_shardCount);
+    end
+end
+
 local methods = {
     ["OnAcquire"] = function(self)
-		-- self:SetWidth(300);
-        -- self:SetHeight(100);
+        __setupPlayerContainer(self);
 
-        self:ContainerOnAcquire();
+        if (self.BaseOnAquire ~= nil) then
+            self:BaseOnAquire();
+        end
 	end,
 
     ["OnRelease"] = function(self) 
-        self:ContainerOnRelease();
+
+        self:RemoveChild(self._addonVersionUsedIco, false);
+        self._addonVersionUsedIco = nil;
+
+        self:RemoveChild(self._assignRaidTargetIco, false);
+        self._assignRaidTargetIco = nil;
+
+        self:RemoveChild(self._title, false);
+        self._title = nil;
+
+        self:RemoveChild(self._curseIco, false);
+        self._curseIco = nil;
+
+        self:RemoveChild(self._shardIco, false);
+        self._shardIco = nil;
+
+        self:RemoveChild(self._shardCount, false);
+        self._shardCount = nil;
+
+        if (self.BaseOnRelease ~= nil) then
+            self:BaseOnRelease();
+        end
     end,
 
     ["LayoutFinished"] = function(self, width, height)
-        
-        self:ContainerLayoutFinished();
-
-		-- if self.noAutoHeight then return end
-		-- self:SetHeight(height or 0)
+        if (self.BaseLayoutFinished ~= nil) then
+            self:BaseLayoutFinished(width, height);
+        end
 	end,
 
 	["OnWidthSet"] = function(self, width)
-        self:ContainerOnWidthSet();
+        if (self.BaseOnWidthSet ~= nil) then
+            self:BaseOnWidthSet(width);
+        end
 
-		-- local content = self.content
-		-- content:SetWidth(width)
-		-- content.width = width
+        __resetTableSetup(self);
 	end,
 
 	["OnHeightSet"] = function(self, height)
-        self:ContainerOnHeightSet();
+        if (self.BaseOnHeightSet ~= nil) then
+            self:BaseOnHeightSet(height);
+        end
 
-		-- local content = self.content
-		-- content:SetHeight(height)
-		-- content.height = height
+        __resetTableSetup(self);
     end,
 
-    ["UpdateWarlockView"] = function(self, warlockData, config)
+    ["UpdateView"] = function(self, warlockData, config)
 
         -- Clean up view data
         self._title:SetText("");
@@ -83,91 +184,30 @@ local methods = {
             local name, _, icon = GetSpellInfo(_profile.AssignCurse);
             self._curseIco:SetImage(icon);
         end
+        self:DoLayout();
     end
 }
 
 local function Constructor()
 
-    AW:Debug("Create WarlockPlayer");
+    local container = AceGUI:Create("SimpleGroup")
+    __resetTableSetup(container);
 
-    local playerInfocontainer = AceGUI:Create("SimpleGroup")
-    playerInfocontainer:SetFullWidth(true)
-    playerInfocontainer:SetAutoAdjustHeight(true)
-    playerInfocontainer:SetLayout("Table");
-    playerInfocontainer:SetUserData("table", {
-        columns = { 18, 20, 1, 20, 20, 25 },
-        space = 2,
-        --align = "TOPLEFT",
-        alignV = "MIDDLE",
-        alignH = "LEFT"
+    __setupPlayerContainer(container);
 
-    })
-
-    local dialogbg = playerInfocontainer.frame:CreateTexture(nil, "BACKGROUND")
-    dialogbg:SetAllPoints(true);
-    dialogbg:SetColorTexture(0, 0, 0, 1);
-
-    -- Version Icon
-    local _addonVersionUsedIco = AceGUI:Create("Icon");
-    _addonVersionUsedIco:SetImageSize(20, 20);
-    _addonVersionUsedIco.frame:SetPoint("LEFT", 5, 0);
-
-    playerInfocontainer._addonVersionUsedIco = _addonVersionUsedIco;
-    playerInfocontainer:AddChild(_addonVersionUsedIco);
-
-    -- Version Assign
-    local _assignRaidTargetIco = AceGUI:Create("Icon");
-    _assignRaidTargetIco:SetImageSize(20, 20);
-
-    playerInfocontainer._assignRaidTargetIco = _assignRaidTargetIco;
-    playerInfocontainer:AddChild(_assignRaidTargetIco);
-
-    -- Player Name
-    local _title = AceGUI:Create("Label");
-    _title:SetFontObject(GameFontHighlight);
-    _title:SetColor(0.9,0.9,0.9)
-    _title:SetFullWidth(true)
-
-    playerInfocontainer._title = _title;
-    playerInfocontainer:AddChild(_title);
-
-    -- Curse Ico
-    local _curseIco = AceGUI:Create("Icon");
-    _curseIco:SetImageSize(20, 20);
-
-    playerInfocontainer._curseIco = _curseIco;
-    playerInfocontainer:AddChild(_curseIco);
-
-    -- Shard Ico
-    local _shardIco = AceGUI:Create("Icon");
-    _shardIco:SetImage("Interface\\ICONS\\INV_Misc_Gem_Amethyst_02");
-    _shardIco:SetImageSize(20, 20);
-
-    playerInfocontainer._shardIco = _shardIco;
-    playerInfocontainer:AddChild(_shardIco);
-
-    -- Shard Count
-    local _shardCount = AceGUI:Create("Label");
-    _shardCount:SetFontObject(GameFontNormalSmall);
-    _shardCount:SetColor(0.9,0.9,0.9)
-    _shardCount:SetFullWidth(true)
-    _shardCount:SetText("142")
-
-    playerInfocontainer._shardCount = _shardCount;
-    playerInfocontainer:AddChild(_shardCount);
-
-
-    playerInfocontainer.ContainerOnAcquire = playerInfocontainer.OnAcquire;
-    playerInfocontainer.ContainerOnRelease = playerInfocontainer.OnRelease;
-    playerInfocontainer.ContainerLayoutFinished = playerInfocontainer.LayoutFinished;
-    playerInfocontainer.ContainerOnWidthSet = playerInfocontainer.OnWidthSet;
-    playerInfocontainer.ContainerOnHeightSet = playerInfocontainer.OnHeightSet;
+    container.BaseOnAcquire = container.OnAcquire;
+    container.BaseOnRelease = container.OnRelease;
+    container.BaseLayoutFinished = container.LayoutFinished;
+    container.BaseOnWidthSet = container.OnWidthSet;
+    container.BaseOnHeightSet = container.OnHeightSet;
 
     for method, func in pairs(methods) do
-		playerInfocontainer[method] = func
+		container[method] = func
 	end
 
-    return playerInfocontainer;
+    container.type = Type;
+
+    return container;
 end
 
 AceGUI:RegisterWidgetType(Type, Constructor, Version)
