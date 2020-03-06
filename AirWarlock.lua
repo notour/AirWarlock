@@ -257,10 +257,12 @@ end
 ---@param data table data send to ask
 function AW:SendProfileUpdateCallback(subEvent, data)
     AW:SendProfileUpdate();
+    AW:UpdateMembersInfo();
 end
 
 ---Send a profil update to the other Addon member
 function AW:SendProfileUpdate()
+    AW:Debug("SendProfileUpdate AW.ViewOnly = " .. tostring(AW.ViewOnly));
     if (AW.ViewOnly == false) then
         AWAceCommModule:SendMessageToMember("UPDATE", AWProfile:GetProfileUpdated());
     end
@@ -499,15 +501,15 @@ function AW:OnDisable()
 end
 
 function AW:Debug(...)
-    if (AW.Config.DebugEnabledPrint == true) then
+    --if (AW.Config.DebugEnabledPrint == true) then
         print(...)
-    end
+    --end
 end
 
 function AW:debug(...)
-    if (AW.Config.DebugEnabledPrint == true) then
+    --if (AW.Config.DebugEnabledPrint == true) then
         AW:Debug(...)
-    end
+    --end
 end
 
 function AW:Error(...)
