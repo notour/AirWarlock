@@ -2,6 +2,8 @@ local Type, Version = "WarlockPlayer", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
+local AWL = AWModuleLoader:ImportModule("AWLocalization");
+
 local __resetTableSetup = function(container)
     container:SetFullWidth(true)
     container:SetAutoAdjustHeight(true)
@@ -13,6 +15,79 @@ local __resetTableSetup = function(container)
         alignV = "MIDDLE",
         alignH = "LEFT"
     });
+end
+
+--- [private] Setup the assign menu (target, curse, ...)
+---@param WarlockPlayer container
+local _setupAssignMenu = function(container)
+    
+    if (container == nil) then
+        return;
+    end
+
+    if (container.frame == nil) then
+        return;
+    end
+
+    container.frame:SetScript("OnMouseUp", function(self, buttonUse, ...)
+
+        if (buttonUse ~= "RightButton") then
+            return;
+        end
+
+        local playerInfo = container:GetUserData("PlayerInfo");
+        local profile = playerInfo.Profile;
+        AW:Debug("_setupAssignMenu " .. tostring(playerInfo) .. " " .. playerInfo.UnitName);
+
+        local assignMenu = {
+            { text = AWL:L("Assign"), isTitle = true}
+        };
+
+        local targets = { };
+
+        for i=1, 8 do
+            table.insert(targets, 0, { text = AWWarlockDB.RaidTargetInfo[i].Name, icon = AWWarlockDB.RaidTargetInfo[i].Icon, arg1 = playerInfo.UnitName, func = function(_, unitName)
+                AW:SetAssignationTarget(i, unitName);
+                container.frame.ContextMenu:Hide();
+            end })
+        end
+
+        table.insert(assignMenu, { text = AWL:L("Clear Target"), func = function()
+            AW:ClearAssignationTarget();
+            container.frame.ContextMenu:Hide();
+        end })
+
+        table.insert(assignMenu, { text = AWL:L("Target"), hasArrow = true, menuList = targets });
+
+        if (profile ~= nil and profile.AvailableCurses ~= nil) then
+            local curses = {};
+
+            table.insert(curses, { text = AWL:L("Clear Curse"), arg1 = playerInfo.UnitName, func = function(_, unitName, spellId)
+                AW:SetCurseAssignationTarget(nil, unitName);
+                container.frame.ContextMenu:Hide();
+            end })
+
+            for indx, curseSpellCast in pairs(profile.AvailableCurses) do
+                local name, _, icon = GetSpellInfo(curseSpellCast)
+                table.insert(curses, { text = name, icon = icon, arg1 = playerInfo.UnitName, arg2 = curseSpellCast, func = function(_, unitName, spellId)
+                    AW:SetCurseAssignationTarget(spellId, unitName);
+                    container.frame.ContextMenu:Hide();
+                end })
+            end
+
+            table.insert(assignMenu, { text = AWL:L("Curse"), hasArrow = true, menuList = curses });
+        end
+
+        if (container.frame.ContextMenu == nil) then
+            -- Note that this frame must be named for the dropdowns to work.
+            local menuFrame = CreateFrame("Frame", "AssignMenu" .. playerInfo.UnitName, container.frame, "UIDropDownMenuTemplate")
+            container.frame.ContextMenu = menuFrame;
+            menuFrame.targetName = playerInfo.UnitName;
+        end
+
+        EasyMenu(assignMenu, container.frame.ContextMenu, "cursor", 0, 0, "MENU", 5);
+        container.frame.ContextMenu:Show();
+    end);
 end
 
 local __setupPlayerContainer = function(container) 
@@ -86,6 +161,7 @@ end
 local methods = {
     ["OnAcquire"] = function(self)
         __setupPlayerContainer(self);
+        _setupAssignMenu(self);
 
         if (self.BaseOnAquire ~= nil) then
             self:BaseOnAquire();
@@ -140,6 +216,8 @@ local methods = {
     end,
 
     ["UpdateView"] = function(self, warlockData, config)
+
+        self:SetUserData("PlayerInfo", warlockData);
 
         -- Clean up view data
         self._title:SetText("");

@@ -481,9 +481,9 @@ do
 		for _, widget in pairs(self.children) do
 			if (tostring(widget) ~= tostring(child)) then
 				tinsert(newChildren, widget);
-				AW:Debug(DEBUG_ELEVATED, "KeepChild -> " .. tostring(widget.debugName) .. " parent " .. tostring(widget) .. " == " .. tostring(child));
-			else
-				AW:Debug(DEBUG_ELEVATED, "RemoveChild -> " .. tostring(widget.debugName) .. " parent " .. tostring(widget) .. " == " .. tostring(child));
+				--AW:Debug(DEBUG_ELEVATED, "KeepChild -> " .. tostring(widget.debugName) .. " parent " .. tostring(widget) .. " == " .. tostring(child));
+			--else
+				--AW:Debug(DEBUG_ELEVATED, "RemoveChild -> " .. tostring(widget.debugName) .. " parent " .. tostring(widget) .. " == " .. tostring(child));
 			end
 		end
 		if (needRelease == nil or needRelease) then
