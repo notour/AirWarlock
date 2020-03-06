@@ -33,7 +33,7 @@ function AWAceCommModule:SendMessageToMember(subeventType, data)
     end
 
     local message = _serializer:Serialize(container);
-    AW:Debug(DEBUG_SPAM, "SendMessageToMember " .. tostring(container.SubEvent) .. " " .. message);
+    AW:Debug(DEBUG_SPAM, "[SEND]  " .. tostring(self._commRoot) .. "." .. tostring(container.SubEvent));
     self:SendCommMessage(self._commRoot, message, target);
 end
 
@@ -55,15 +55,17 @@ end
 ---@param sender string full player name that send the message
 function AWAceCommModule:_SafeCommMessageHandler(prefix, message, msgType, sender)
 
+    AW:Debug(DEBUG_SPAM, "[RECEIVE] " .. tostring(prefix) .. " " .. sender);
     local unitName, server = UnitFullName("Player");
     if (prefix ~= self._commRoot or sender == unitName or sender == unitName .. "-" .. server) then
         return;
     end
 
     local container = _serializer:Deserialize(message);
-    AW:Debug(DEBUG_SPAM, "_SafeCommMessageHandler " .. tostring(container.SubEvent) .. " " .. message);
-
+    
+    AW:Debug(DEBUG_SPAM, "    --- [PROCESS RECEIVE] " .. tostring(container.SubEvent) .. " " .. sender);
     if (container.SubEvent ~= nil and self._callbacks[container.SubEvent] ~= nil) then
         self._addon[self._callbacks[container.SubEvent]](self._addon, container.SubEvent, container.Data);
     end
 end
+/
