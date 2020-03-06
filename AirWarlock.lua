@@ -5,8 +5,8 @@
 -- Global debug levels, see bottom of this file and `debugLevel` in QuestieOptionsAdvanced.lua for relevant code
 -- When adding a new level here it MUST be assigned a number and name in `debugLevel.values` as well added to Questie:Debug below
 
-AW_VERSION = "1.1.2"
-AW_VERSION_NUM = "3"
+AW_VERSION = "1.1.3"
+AW_VERSION_NUM = "4"
 
 DEBUG_CRITICAL = "|cff00f2e6[CRITICAL]|r"
 DEBUG_ELEVATED = "|cffebf441[ELEVATED]|r"
@@ -20,7 +20,7 @@ local ClassTypeLower = "warlock";
 local Events = {
     UpdateMembersInfoCallback =  {
         -- Update warlock lists
-        --"PARTY_MEMBERS_CHANGED",
+        --"PARTY_MEMBERS_CHANGED"
         "GROUP_ROSTER_UPDATE",
         --"PARTY_CONVERTED_TO_RAID",
         "PARTY_MEMBER_DISABLE",
@@ -271,18 +271,18 @@ end
 ---@param profile table warlock member profile info
 function AW:UpdateWarlockDataCallback(subEvent, profile)
 
-    --AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent) .. " profile " .. tostring(profile));
+    AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent) .. " profile " .. tostring(profile));
 
     AW:UpdateMembersInfo();
 
     if (profile ~= nil and profile.Name ~= nil) then
         AW.Warlocks[profile.Name] = profile;
 
-        --AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback by " .. tostring(profile.Name));
+        AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback by " .. tostring(profile.Name));
     end
 
-    --AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent));
-    AW:_updateWarlockMainView();
+    AW:Debug(DEBUG_INFO, "UpdateWarlockDataCallback " .. tostring(subEvent));
+    AW:UpdateMembersInfo();
 end
 
 --[[
@@ -308,13 +308,13 @@ function AW:SlashCommands(args)
 
         if (args ~= nil and arg1:lower() == "update") then
             AW:SendProfileUpdate();
-            AW:_updateWarlockMainView();
+            AW:UpdateMembersInfo();
         end
 
         if (args ~= nil and arg1:lower() == "show") then
             AW.WarlockView:Show();
             AW:SendProfileUpdate();
-            AW:_updateWarlockMainView();
+            AW:UpdateMembersInfo();
             AW:Debug(DEBUG_INFO, "Air warlock SHOW");
         end
 
@@ -397,7 +397,7 @@ function AW:LogTrack(eventName, ...)
         local needToUpdate = AWProfile:UpdateTrackingSpellInfo(destGUID, subevent, effect);
         if (needToUpdate) then
             AW:SendProfileUpdate();
-            AW:_updateWarlockMainView();
+            AW:UpdateMembersInfo();
         end
     end
 end
