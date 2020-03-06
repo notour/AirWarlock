@@ -126,7 +126,6 @@ function AW:OnInitialize()
         for indx,eventName in pairs(mapEvent) do
             frame:RegisterEvent(eventName)
             self._registerScript[eventName] = key;
-            --self:Debug(DEBUG_DEVELOP, "frame:RegisterEvent(" .. eventName .. ") by key " .. key .. "");
         end
     end
 
@@ -502,15 +501,15 @@ function AW:OnDisable()
 end
 
 function AW:Debug(...)
-    --if (AW.Config.DebugEnabledPrint == true) then
+    if (AW.Config.DebugEnabledPrint == true) then
         print(...)
-    --end
+    end
 end
 
 function AW:debug(...)
-    --if (AW.Config.DebugEnabledPrint == true) then
+    if (AW.Config.DebugEnabledPrint == true) then
         AW:Debug(...)
-    --end
+    end
 end
 
 function AW:Error(...)
