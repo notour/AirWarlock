@@ -330,12 +330,12 @@ function AW:SlashCommands(args)
             local debugON = arg2:lower() == "1" or arg2:lower() == "on";
             local debugOFF = arg2:lower() == "0" or arg2:lower() == "off";
 
-            if (debugON and AW.Config.DebugEnabledPrint == false) then
+            if (debugON and (AW.Config.DebugEnabledPrint == nil or AW.Config.DebugEnabledPrint == false)) then
                 AW.Config.DebugEnabledPrint = true;
                 AW:Debug(DEBUG_INFO, "Air warlock : Debug log ON");
             end
 
-            if (debugOFF and AW.Config.DebugEnabledPrint) then
+            if (debugOFF and  (AW.Config.DebugEnabledPrint == nil or AW.Config.DebugEnabledPrint == true)) then
                 AW:Debug(DEBUG_INFO, "Air warlock : Debug log OFF");
                 AW.Config.DebugEnabledPrint = false;
             end
