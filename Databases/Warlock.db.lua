@@ -2,6 +2,8 @@ if (AWWarlockDB ~= nil) then
     return;
 end
 
+local AWL = AWModuleLoader:ImportModule("AWLocalization");
+
 -- https://wow.tools/dbc/?dbc=spellname&build=1.13.3.32836#search=&page=1
 AWWarlockDB = {};
 
@@ -253,4 +255,15 @@ AWWarlockDB.Curses = {
             17938,
         }
     }
+}
+
+AWWarlockDB.RaidTargetInfo = {
+    [1] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1", Name = AWL:L("Star") },
+    [2] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_2", Name = AWL:L("Circle") },
+    [3] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_3", Name = AWL:L("Diamond") },
+    [4] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_4", Name = AWL:L("Triangle") },
+    [5] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_5", Name = AWL:L("Moon") },
+    [6] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_6", Name = AWL:L("Square") },
+    [7] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_7", Name = AWL:L("Cross") },
+    [8] = { Icon = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_8", Name = AWL:L("Skull") },
 }

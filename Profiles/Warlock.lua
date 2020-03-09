@@ -28,20 +28,19 @@ end
 ]]
 local _listAllAvailabledCurseOnPlayer = function()
     local curses = {};
-    for key,data in pairs(AWWarlockDB.Curses) do
+    for _,data in pairs(AWWarlockDB.Curses) do
         local maxSpellId = nil;
         local maxSpellManaCost = -1;
-        for indx,spellId in pairs(data.Spells) do
+        for _,spellId in pairs(data.Spells) do
             local usable, _ = IsUsableSpell(spellId);
 
             local manaCosts = WowApiHelper:GetSpellCostByType(spellId, WowApiHelper.Const.CostType.Mana);
 
-            if (usable and manaCosts ~= nil and (maxSpellId == nil or manaCosts > maxSpellManaCost)) then
+            if (usable and usable == true and manaCosts ~= nil and (maxSpellId == nil or manaCosts > maxSpellManaCost)) then
 
                 maxSpellId = spellId;
                 maxSpellManaCost = manaCosts;
             end
-
         end
 
         if (maxSpellId ~= nil) then
@@ -49,7 +48,7 @@ local _listAllAvailabledCurseOnPlayer = function()
         end
     end
 
-    for indx,spellId in pairs(curses) do
+    for _,spellId in pairs(curses) do
         local name, rank = GetSpellInfo(spellId);
         AW:Debug("Availabled curse ".. spellId .. " : |Hspell:" .. spellId .."|h|r|cff71d5ff[" .. tostring(name) .. " " .. tostring(rank) .. "]|r|h");
     end
@@ -68,15 +67,11 @@ function AWProfileModule:GetCurrent()
         self.currentProfile = {
             Name = UnitName("player"),
             NBSoulFragment = WowApiHelper:GetItemCount(AWWarlockDB.SoulShardId),
-            AvailableCurses = _listAllAvailabledCurseOnPlayer()
+            AvailableCurses = _listAllAvailabledCurseOnPlayer(),
         };
     end
 
-    -- for indx,spellId in pairs(self.currentProfile.AvailableCurses) do
-    --     local name, rank = GetSpellInfo(spellId);
-    --     AW:Debug("Availabled curse ".. spellId .. " : |Hspell:" .. spellId .."|h|r|cff71d5ff[" .. tostring(name) .. " " .. tostring(rank) .. "]|r|h");
-    -- end
-
+    self.currentProfile.VersionNum = AW_VERSION_NUM
     return self.currentProfile;
 end
 

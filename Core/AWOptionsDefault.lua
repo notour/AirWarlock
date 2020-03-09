@@ -6,15 +6,7 @@ local AWOptionDefaults = AWModuleLoader:CreateModule("AWOptionDefaults");
 ]]
 function AWOptionDefaults:Load()
     return {
-        global = {
-            debugEnabled = true,
-            debugEnabledPrint = false,
-            debugLevel = DEBUG_DEVELOP
-        },
-        profile = {
-            minimap = {
-                hide = false
-            }
-        }
+        DebugEnabledPrint = true,
+        DebugLevel = DEBUG_DEVELOP
     }
 end
