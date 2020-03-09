@@ -15,7 +15,7 @@ V1:
 For all the people that have this plugin :
     - Display the shard's number
     - Display the ban target and timer
-    
+    - Display Addon version and other warlock versions
     
 [In Dev] V2 :
 - TP list + auto tp on click
